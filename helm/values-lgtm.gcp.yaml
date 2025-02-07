@@ -1,0 +1,549 @@
+---
+grafana:
+  # -- Deploy Grafana if enabled. See [upstream readme](https://github.com/grafana/helm-charts/tree/main/charts/grafana#configuration) for full values reference.
+  enabled: true
+  persistence:
+    type: pvc
+    enabled: true
+    storageClassName: standard-rwo
+    accessModes:
+      - ReadWriteOnce
+    size: 30Gi
+  envFromSecret: grafana-env
+  #grafana.ini:
+  #  server:
+  #    root_url: https://hostname-here.com
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+
+ #ingress:
+  # enabled: true
+    #hosts: ["hostname-here.com"]
+
+  sidecar:
+    dashboards:
+      enabled: true
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Loki
+          uid: loki
+          type: loki
+          url: http://{{ .Release.Name }}-loki-gateway
+          isDefault: false
+        - name: Mimir
+          uid: prom
+          type: prometheus
+          url: http://{{ .Release.Name }}-mimir-nginx/prometheus
+          isDefault: true
+        - name: Tempo
+          uid: tempo
+          type: tempo
+          url: http://{{ .Release.Name }}-tempo-query-frontend:3100
+          isDefault: false
+          jsonData:
+            tracesToLogsV2:
+              datasourceUid: loki
+            lokiSearch:
+              datasourceUid: loki
+            tracesToMetrics:
+              datasourceUid: prom
+            serviceMap:
+              datasourceUid: prom
+
+loki:
+  # -- Deploy Loki if enabled. See [upstream readme](https://github.com/grafana/helm-charts/tree/main/charts/loki-distributed#values) for full values reference.
+  enabled: true
+  commonConfig:
+    replication_factor: 1
+  loki:
+    server:
+      #grpc_server_max_concurrent_streams: 1000
+      grpc_server_max_recv_msg_size: 104857600
+      grpc_server_max_send_msg_size: 104857600
+    schemaConfig:
+      configs:
+      - from: "2020-09-07"
+        store: tsdb
+        object_store: gcs
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+    structuredConfig:
+      limits_config:
+        max_global_streams_per_user: 5000
+        max_query_length: 0h 
+        max_query_parallelism: 32 
+        max_streams_per_user: 0
+        enforce_metric_name: false
+        max_cache_freshness_per_query: 10m
+        reject_old_samples: true
+        reject_old_samples_max_age: 168h
+        split_queries_by_interval: 15m
+        allow_structured_metadata: true
+        max_query_series: 100000
+        #retention_period: 720h # retention 30 days
+      compactor:
+        working_directory: /var/loki/compactor
+        shared_store: gcs
+        compaction_interval: 5m
+        #retention_enabled: true
+        #retention_delete_delay: 5m
+        #retention_delete_worker_count: 150
+    storageConfig:
+      tsdb_shipper:
+        shared_store: gcs
+        active_index_directory: /var/loki/index
+        cache_location: /var/loki/cache
+        cache_ttl: 24h
+      gcs:
+        bucket_name: lgtm-logs
+
+  distributor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 20m
+        memory: 500Mi
+    
+
+  ingester:
+   persistentVolume:
+      size: 30Gi
+   maxUnavailable: 1
+   replicas: 2
+   resources: 
+     requests:
+       cpu: 20m
+       memory: 500Mi
+  
+   extraVolumes:
+   - name: lgtm-sa-volume
+     secret:
+        secretName: lgtm-sa 
+   extraVolumeMounts: 
+   - name: lgtm-sa-volume 
+     mountPath: /etc/secrets
+   extraEnv:
+   - name: GOOGLE_APPLICATION_CREDENTIALS
+     value: /etc/secrets/key.json
+  
+  queryFrontend:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 20m
+        memory: 500Mi
+    
+  querier:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 20m
+        memory: 4Gi
+    
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: /etc/secrets/key.json
+
+  compactor:
+    enabled: true
+    replicas: 1
+    persistentVolume:
+      size: 10Gi
+    resources:
+      requests:
+        cpu: 20m
+        memory: 2Gi
+    
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: /etc/secrets/key.json
+
+  memcachedChunks:
+    enabled: false
+
+  memcachedFrontend:
+    enabled: false
+  
+  memcachedIndexQueries:
+    enabled: false
+  
+  memcachedIndexWrites:
+    enabled: false
+    
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: prometheus-operator
+
+  prometheusRule:
+    enabled: true
+    labels:
+      release: prometheus-operator
+   
+
+# -- Mimir chart values. Resources are set to a minimum by default.
+mimir:
+  enabled: true
+  server:
+      grpc_server_max_concurrent_streams: 1000
+      grpc_server_max_recv_msg_size: 104857600
+      grpc_server_max_send_msg_size: 104857600
+  global:
+    extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: /etc/secrets/key.json
+  mimir:
+    structuredConfig:
+      limits:
+        max_global_series_per_user: 10000000
+        #compactor_blocks_retention_period: 30d # retention
+        ingestion_rate: 150000
+        ingestion_burst_size: 300000
+      common:
+       storage:
+         backend: gcs
+         gcs:
+           bucket_name: lgtm-metrics
+      blocks_storage:
+        backend: gcs
+        gcs:
+          bucket_name: lgtm-metrics
+      ruler_storage:
+        backend: gcs
+        gcs:
+          bucket_name: lgtm-metrics-admin
+      alertmanager_storage:
+        backend: gcs
+        gcs:
+          bucket_name: lgtm-metrics-admin
+
+  distributor:
+    replicas: 1
+    resources:
+      limits:
+        memory: 4Gi
+      requests:
+        cpu: 20m
+        memory: 1Gi
+    
+
+  ingester:
+    persistentVolume:
+      size: 30Gi
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    replicas: 2
+    maxUnavailable: 1
+    resources:
+      limits:
+        memory: 6Gi
+      requests:
+        cpu: 20m
+        memory: 3Gi
+    
+    zoneAwareReplication:
+      enabled: false
+
+  metaMonitoring:
+    dashboards:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+      labels:
+        release: prometheus-operator
+    prometheusRule:
+      enabled: true
+      mimirAlerts: true
+      mimirRules: true
+      labels:
+        release: prometheus-operator
+    
+
+  alertmanager:
+    enabled: false
+
+  compactor:
+    persistentVolume:
+      size: 10Gi
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    resources:
+      limits:
+        memory: 2Gi
+      requests:
+        memory: 1Gi
+    
+
+  overrides_exporter:
+    resources:
+      requests:
+        cpu: 20m
+    
+
+  querier:
+    replicas: 2
+    resources:
+      limits:
+        memory: 4Gi
+      requests:
+        cpu: 20m
+        memory: 1Gi
+    
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+
+  query_frontend:
+    replicas: 1
+    resources:
+      limits:
+        memory: 2Gi
+      requests:
+        cpu: 20m
+        memory: 1Gi
+    
+
+  query_scheduler:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 20m
+    
+
+  ruler:
+    resources:
+      requests:
+        cpu: 20m
+    
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+
+  store_gateway:
+    replicas: 1
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    resources:
+        requests:
+          cpu: 20m
+    
+    zoneAwareReplication:
+      enabled: false
+
+  minio:
+    enabled: false
+
+  rollout_operator:
+    resources:
+      requests:
+        cpu: 20m
+    
+
+  chunks-cache:
+    enabled: false
+    replicas: 1
+
+  index-cache:
+    enabled: false
+    replicas: 1
+
+  metadata-cache:
+    enabled: false
+
+  results-cache:
+    enabled: false
+    replicas: 1
+
+tempo:
+  # -- Deploy Tempo if enabled.  See [upstream readme](https://github.com/grafana/helm-charts/blob/main/charts/tempo-distributed/README.md#values) for full values reference.
+  enabled: true
+  metaMonitoring:
+    serviceMonitor:
+      enabled: true
+      labels:
+        release: prometheus-operator
+    prometheusRule:
+      enabled: true
+      labels:
+        release: prometheus-operator
+  storage:
+    trace: 
+      backend: gcs
+      gcs: 
+        bucket_name: lgtm-traces
+        prefix: traces
+        endpoint: https://storage.googleapis.com/storage/v1/
+
+  distributor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 20m
+    
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: /etc/secrets/key.json
+
+  ingester:
+    replicas: 1
+    config: 
+      replication_factor: 1
+    resources:
+      requests:
+        cpu: 20m
+        memory: 1Gi
+    
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: /etc/secrets/key.json
+
+  querier:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 20m
+        memory: 1Gi
+    
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: /etc/secrets/key.json
+
+  compactor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 20m
+        memory: 1Gi
+    #config:
+    #  compaction:
+    #     block_retention: 720h
+    
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: /etc/secrets/key.json
+
+  queryFrontend:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 20m
+        memory: 500Mi
+    
+        
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: /etc/secrets/key.json
+
+  traces:
+    otlp:
+      grpc:
+        enabled: true
+      http:
+        enabled: true
+
+  memcached:
+    
+  # Enable service graph generation
+  metricsGenerator:
+    enabled: true
+    
+    extraVolumes:
+    - name: lgtm-sa-volume
+      secret:
+        secretName: lgtm-sa
+    extraVolumeMounts:
+    - name: lgtm-sa-volume
+      mountPath: /etc/secrets
+    extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: /etc/secrets/key.json
+    config:
+      storage:
+        remote_write:
+        - url: http://lgtm-mimir-nginx/api/v1/push
+          send_exemplars: true
+  global_overrides:
+    defaults:
+      metrics_generator:
+        processors:
+          - service-graphs
+          - span-metrics

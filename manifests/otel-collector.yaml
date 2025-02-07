@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  labels:
+    app: otel-collector
+spec:
+  ports:
+  - port: 4318
+    targetPort: 4318
+    protocol: TCP
+    name: http
+  - port: 4317
+    targetPort: 4317
+    protocol: TCP
+    name: grpc
+  - port: 3100
+    targetPort: 3100
+    protocol: TCP
+    name: logs
+  selector:
+    app: otel-collector
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: otel-collector
+  labels:
+    app: otel-collector
+spec:
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+      - name: otel-collector
+        image: "gcr.io/hu-cloud-189316/opentelemetry-collector-contrib:0.105.0"
+        args:
+          - --config=/etc/otel-collector-config/config.yaml
+        imagePullPolicy: IfNotPresent
+        ports:  
+        - name: jaeger-grpc
+          containerPort: 14250
+          protocol: TCP
+        - name: metrics
+          containerPort: 8888
+          protocol: TCP
+        - name: otlp
+          containerPort: 4317
+          protocol: TCP
+        - name: otlp-http
+          containerPort: 4318
+          protocol: TCP
+        - name: prometheus
+          containerPort: 9464
+          protocol: TCP
+        - name: logs
+          containerPort: 3100
+          protocol: TCP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/otel-collector-config
+        env:
+        - name: GOMEMLIMIT
+          value: "800MiB"
+        resources:
+          requests:
+            memory: 500Mi
+          limits:
+            memory: 800Mi
+      volumes:
+      - name: config-volume
+        configMap:
+          name: otel-collector-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  labels:
+    app: otel-collector
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: "0.0.0.0:4318"
+          grpc:
+            endpoint: "0.0.0.0:4317"
+      loki:
+        protocols:
+          http:
+            endpoint: "0.0.0.0:3100"
+    processors:
+      batch:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 800
+      attributes/loki:
+        actions:
+         - action: insert
+           key: loki.format
+           value: raw
+         - action: insert
+           key: loki.attribute.labels
+           value: facility, level, source, host, app, namespace, pod, container, job
+    exporters:
+      otlp/tempo:
+        endpoint: lgtm-tempo-distributor.monitoring:4317
+        tls:
+          insecure: true
+      loki:
+        endpoint: http://lgtm-loki-distributor.monitoring.svc:3100/loki/api/v1/push
+      prometheusremotewrite/mimir:
+        endpoint: http://lgtm-mimir-nginx.monitoring/api/v1/push
+        tls:
+            insecure: true
+      logging:
+        verbosity: detailed
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch, memory_limiter]
+          exporters: [otlp/tempo]
+        logs:
+          receivers: [loki,otlp]
+          processors: [attributes/loki, batch, memory_limiter]
+          exporters: [loki]
+        metrics:
+          receivers: [otlp]
+          processors: [batch, memory_limiter]
+          exporters: [prometheusremotewrite/mimir]
