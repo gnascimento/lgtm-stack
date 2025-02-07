@@ -44,7 +44,7 @@ Local development:
 Production setup:
 - Can vary a lot depending on the amount of data and traffic, it's recommended to start with a small setup and scale as needed, for small setups with 20 million logs consumed per day, 11k metrics per minute and 3 million spans per day, the following setup is recommended:
   - 8 CPUs
-  - 16 GB RAM
+  - 24 GB RAM
   - 100 GB disk space (SSD, don't count for storage backends)
 
 ### Setup
