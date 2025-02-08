@@ -1,11 +1,11 @@
-# 🔍 LGTM Stack for Kubernetes
-
 <br>
 
 <div align="center">
     <a href="README.md">🇺🇸 English</a> | <a href="README.pt-br.md">🇧🇷 Português (Brasil)</a>
 </div>
 <br>
+
+# 🔍 LGTM Stack for Kubernetes
 
 ## Introduction
 
