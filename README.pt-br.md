@@ -20,6 +20,7 @@ Com essa stack, temos uma solução completa de observabilidade que cobre logs, 
 
 <div align="center">
 <h3> Esse guia irá te ajudar a configurar a stack LGTM no seu ambiente Kubernetes, seja para desenvolvimento local ou produção, também como configurar um coletor de open telemetry para direcionar todos os dados de telemetria para os backends apropriados.</h3>
+</div>
 
 ## Arquitetura
 
