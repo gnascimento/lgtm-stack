@@ -18,13 +18,11 @@ Um guia completo para implantação de uma plataforma de observabilidade no Kube
 
 ## Arquitetura
 
-A arquitetura do stack LGTM integra todos os componentes para fornecer uma solução completa de observabilidade:
-
 ![Arquitetura LGTM](./assets/images/lgtm.jpg)
 
-Cada componente (Loki, Grafana, Tempo, Mimir) roda no Kubernetes com seu próprio backend de armazenamento. Como exemplo, estamos usando o Cloud Storage da GCP, mas eles também suportam AWS/Azure como backends, para desenvolvimento local podemos usar o MinIO.
+Cada componente (Loki, Grafana, Tempo, Mimir) roda no Kubernetes com seu próprio backend de armazenamento. Como exemplo, estamos usando o Cloud Storage da GCP, mas a stack também suportam AWS/Azure como backends, para desenvolvimento local podemos usar o MinIO.
 
-A stack também inclui três componentes opcionais:
+A arquitetura também inclui três componentes opcionais:
 - Prometheus: coleta métricas do cluster (CPU/Memória) e envia para o Mimir
 - Promtail: agente que captura logs dos containers e envia para o Loki
 - OpenTelemetry Collector: encaminha todos os dados de telemetria para os backends apropriados, atuando como um hub central

@@ -29,7 +29,7 @@ With this stack, we have a complete observability solution that covers logs, met
 
 Each component (Loki, Grafana, Tempo, Mimir) runs in Kubernetes with its own storage backend. For instance we are using GCP Cloud Storage as example, but they support AWS/Azure as backends too, for local development we can use MinIO.
 
-Also the stack includes three optional components:
+Also this architecture includes three optional components:
 - Prometheus: collects cluster metrics (CPU/Memory) and sends to Mimir
 - Promtail: agent that captures container logs and sends to Loki
 - OpenTelemetry Collector: routes all telemetry data to appropriate backends, acts as a central hub
