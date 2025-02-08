@@ -7,16 +7,23 @@
 </div>
 <br>
 
-A complete observability platform deployment guide for Kubernetes. The LGTM stack, by Grafana Labs, combines best-in-class open-source tools to provide comprehensive system visibility, consisting of:
+## Introduction
+
+The LGTM stack, by Grafana Labs, combines best-in-class open-source tools to provide comprehensive system visibility, consisting of:
 
 - **Loki**: Log storage and management
 - **Tempo**: Distributed tracing storage and management
 - **Mimir**: Long-term metrics storage
 - **Grafana**: Interface & Dashboards
 
-## Architecture
+With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events.
 
-The LGTM stack architecture integrates all components to provide a complete observability solution:
+
+<div align="center">
+<h3>This guide will help you set up the LGTM stack in your Kubernetes environment, whether for local development or production, also how to setup an open telemetry collector to route all telemetry data to the appropriate backends.</h3>
+</div>
+
+### Architecture
 
 ![LGTM Architecture](./assets/images/lgtm.jpg)
 
@@ -27,13 +34,6 @@ Also the stack includes three optional components:
 - Promtail: agent that captures container logs and sends to Loki
 - OpenTelemetry Collector: routes all telemetry data to appropriate backends, acts as a central hub
 
-## Quick Start 
-
-### ✨ Prerequisites
-- Helm v3+ (package manager)
-- kubectl 
-- For GCP: gcloud CLI with project owner permissions
-
 ### Hardware Requirements
 
 Local development:
@@ -42,10 +42,49 @@ Local development:
 - 50 GB disk space
 
 Production setup:
-- Can vary a lot depending on the amount of data and traffic, it's recommended to start with a small setup and scale as needed, for small setups with 20 million logs consumed per day, 11k metrics per minute and 3 million spans per day, the following setup is recommended:
+- Can vary a lot depending on the amount of data and traffic, it's recommended to start with a small setup and scale as needed, for small-mid environments the following is recommended (minimum):
   - 8 CPUs
   - 24 GB RAM
   - 100 GB disk space (SSD, don't count for storage backends)
+
+## Summary
+
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+    - [Option 1: Makefile](#option-1-makefile)
+    - [Option 2: Manual Installation](#option-2-manual-installation)
+- [Install dependencies](#install-dependencies)
+- [Testing](#testing)
+  - [Access Grafana](#access-grafana)
+  - [Component Testing](#component-testing)
+    - [Loki (Logs)](#loki-logs)
+    - [Tempo (Traces)](#tempo-traces)
+    - [Mimir (Metrics)](#mimir-metrics)
+
+## Quick Start 
+
+### ✨ Prerequisites
+- [Helm v3+](https://helm.sh/docs/intro/install/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- For GCP: [gcloud CLI](https://cloud.google.com/sdk/docs/install)
+
+### Installation
+
+### Option 1: Makefile
+
+To simplify the installation process, you can use the Makefile commands:
+
+```bash
+# Clone repository
+git clone git@github.com:daviaraujocc/lgtm-stack.git
+cd lgtm-stack
+make install-local # For local testing, for using GCP cloud storage use make install-gcp
+```
+
+This will install the LGTM stack with the default configuration for local development with the dependencies (promtail, dashboards, prometheus). If you want to customize the installation, you can edit the `helm/values-lgtm.local.yaml` file.
+
+### Option 2: Manual Installation
 
 ### Setup
 ```bash
@@ -54,6 +93,10 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 kubectl create ns monitoring
+
+# Install prometheus operator for metrics collection and CRDs
+helm install prometheus-operator --version 66.3.1 -n monitoring \
+  prometheus-community/kube-prometheus-stack -f helm/values-prometheus.yaml
 ```
 
 ### Choose Your Environment
@@ -105,7 +148,7 @@ kubectl create secret generic lgtm-sa --from-file=key.json -n monitoring
 
 2. Install LGTM stack:
 
-Change values-lgtm.gcp.yaml according to your needs before applying, like ingress configuration, resources requests, etc.
+You can change values in `helm/values-lgtm.gcp.yaml` to fit your environment if you want like ingress for grafana, etc, the default values will be sufficient for most cases. 
 
 ```bash
 helm install lgtm --version 2.1.0 -n monitoring \
@@ -122,10 +165,6 @@ helm install lgtm --version 2.1.0 -n monitoring \
 kubectl apply -f manifests/promtail.docker.yaml
 ## CRI-O runtime
 kubectl apply -f manifests/promtail.cri.yaml
-
-# Install prometheus operator for metrics collection
-helm install prometheus-operator --version 66.3.1 -n monitoring \
-  prometheus-community/kube-prometheus-stack -f helm/values-prometheus.yaml
 
 # Install kubernetes dashboards for grafana
 kubectl apply -f manifests/kubernetes-dashboards.yaml
@@ -192,7 +231,7 @@ To verify:
 
 #### Mimir (Metrics)
 
-If Prometheus operator was installed, we have an instance running inside the cluster sending basic metrics (CPU/Memory) to mimir, you can check the metrics already in Grafana:
+Since we have a Prometheus instance running inside the cluster sending basic metrics (CPU/Memory) to Mimir, you can already check the metrics in Grafana:
 
 1. Access Grafana
 2. Go to Explore > Select Mimir datasource
@@ -227,14 +266,34 @@ kubectl logs -l app.kubernetes.io/name=mimir -n monitoring
 
 ### OpenTelemetry Collector
 
-The OpenTelemetry Collector acts as a central hub for all telemetry data:
+The OpenTelemetry Collector acts as a central hub for all telemetry data, routing it to the appropriate backends (Loki, Tempo, Mimir). This simplifies the integration of new services/applications and ensures all telemetry data is collected and stored correctly.
+
+To install the OpenTelemetry Collector:
 
 ```bash
 # Install OpenTelemetry Collector
 kubectl apply -f manifests/otel-collector.yaml
 ```
 
-#### Endpoints Configuration
+Check if the collector is up and running:
+
+```bash
+kubectl get pods -l app=otel-collector
+```
+
+#### Integration Guide
+
+The OpenTelemetry Collector automatically routes data to the appropriate backend based on the data type and port. Here's how to use it:
+
+For logs:
+Point your log shippers or applications to `http://otel-collector:3100`. The collector forwards everything to Loki.
+
+For traces and metrics:
+Configure your OpenTelemetry SDK to use either:
+- gRPC endpoint: `otel-collector:4317`  
+- HTTP endpoint: `http://otel-collector:4318`
+
+##### Endpoints Configuration
 
 | Data Type | Protocol | Endpoint | Port |
 |-----------|----------|----------|------|
@@ -244,34 +303,11 @@ kubectl apply -f manifests/otel-collector.yaml
 | Metrics | HTTP | otel-collector | 4318 |
 | Logs | HTTP | otel-collector | 3100 |
 
-#### Integration with Components
-
-1. **Promtail Configuration**
-   - Edit `manifests/promtail.yaml`
-   - Update clients section:
-   ```yaml
-   clients:
-     - url: http://otel-collector:3100/loki/api/v1/push
-   ```
-
-2. **Application Integration**
-   - Use OpenTelemetry SDKs
-   - Configure endpoint: `otel-collector:4317` for gRPC
-   - For HTTP: `http://otel-collector:4318`
-
-#### Verification
-
-Check collector is receiving data:
-```bash
-# View collector logs
-kubectl logs -l app=otel-collector -n monitoring
-```
-
 #### Extra Configuration
 
 ##### Loki Labels Customization
 
-To add new labels to logs in Loki through the OpenTelemetry Collector:
+In case you have new labels you want to add to logs in Loki through the OpenTelemetry Collector, you need to perform the following configuration:
 
 1. Edit the ConfigMap `otel-collector-config`
 2. Locate the `processors.attributes/loki` section
