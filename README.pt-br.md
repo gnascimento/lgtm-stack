@@ -260,7 +260,7 @@ Como temos uma instância do Prometheus rodando dentro do cluster enviando métr
    - `rate(container_cpu_usage_seconds_total[5m])` - Uso de CPU
    - `container_memory_usage_bytes` - Uso de memória do container
 
-Você também pode fazer o push de métricas personalizadas para o Mimir usando o Prometheus Pushgateway ou OpenTelemetry SDK, para o endpoint `http://lgtm-mimir-nginx.monitoring:80/api/v1/push`.
+Você também pode fazer o push de métricas personalizadas para o Mimir usando o Prometheus Pushgateway, para o endpoint `http://lgtm-mimir-nginx.monitoring:80/api/v1/push`.
 
 ## OpenTelemetry
 
