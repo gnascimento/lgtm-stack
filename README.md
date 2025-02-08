@@ -61,6 +61,12 @@ Production setup:
     - [Loki (Logs)](#loki-logs)
     - [Tempo (Traces)](#tempo-traces)
     - [Mimir (Metrics)](#mimir-metrics)
+- [OpenTelemetry](#opentelemetry)
+  - [OpenTelemetry Collector](#opentelemetry-collector)
+    - [Integration Guide](#integration-guide)
+      - [Endpoints Configuration](#endpoints)
+      - [Extra Configuration](#extra-configuration)
+        - [Loki Labels Customization](#loki-labels-customization)
 - [Uninstall](#uninstall)
 
 ## Quick Start 
@@ -237,6 +243,8 @@ If you have installed promtail you can check the container logs also on Explore 
 
 #### Tempo (Traces)
 
+Since Tempo is compatible with the OpenTelemetry OTLP protocol, we will use the Jaeger Trace Generator, a tool that generates example traces and sends the data using OTLP.
+
 ```bash
 # Forward Tempo port
 kubectl port-forward svc/lgtm-tempo-distributor 4318:4318 -n monitoring
@@ -261,11 +269,19 @@ Since we have a Prometheus instance running inside the cluster sending basic met
    - `container_memory_usage_bytes` - Container memory usage
 
 
-## Additional Components
+## OpenTelemetry
+
+OpenTelemetry is a set of APIs, libraries, agents, and instrumentation to provide observability for cloud-native software. It consists of three main components:
+
+- **OpenTelemetry SDK**: Libraries for instrumenting applications to collect telemetry data (traces, metrics, logs).
+- **OpenTelemetry Collector**: A vendor-agnostic agent that collects, processes, and exports telemetry data to backends.
+- **OpenTelemetry Protocol (OTLP)**: A standard for telemetry data exchange between applications and backends.
+
+In this setup, we will use the OpenTelemetry Collector to route telemetry data to the appropriate backends (Loki, Tempo, Mimir).
 
 ### OpenTelemetry Collector
 
-The OpenTelemetry Collector acts as a central hub for all telemetry data, routing it to the appropriate backends (Loki, Tempo, Mimir). This simplifies the integration of new services/applications and ensures all telemetry data is collected and stored correctly.
+The OpenTelemetry Collector acts as a central hub for all telemetry data, routing it to the appropriate backends (Loki, Tempo, Mimir).
 
 To install the OpenTelemetry Collector:
 
@@ -292,7 +308,7 @@ Configure your OpenTelemetry SDK to use either:
 - gRPC endpoint: `otel-collector:4317`  
 - HTTP endpoint: `http://otel-collector:4318`
 
-##### Endpoints Configuration
+##### Endpoints
 
 | Data Type | Protocol | Endpoint | Port |
 |-----------|----------|----------|------|

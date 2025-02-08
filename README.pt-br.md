@@ -54,6 +54,12 @@ Ambiente de produção:
     - [Loki (Logs)](#-loki-logs)
     - [Tempo (Traces)](#tempo-traces)
     - [Mimir (Métricas)](#mimir-métricas)
+- [OpenTelemetry](#opentelemetry)
+  - [OpenTelemetry Collector](#opentelemetry-collector)
+    - [Guia de Integração](#guia-de-integração)
+      - [Endpoints](#endpoints)
+      - [Configuração Extra](#configuração-extra)
+        - [Personalização de Labels do Loki](#personalização-de-labels-do-loki)
 - [Desinstalação](#desinstalação)
   
 ## Início Rápido
@@ -223,6 +229,8 @@ Se você instalou o Promtail, você também pode verificar os logs dos container
 
 #### Tempo (Traces)
 
+Como o tempo é compatível com o protocolo OTLP da OpenTelemetry, usaremos o Jaeger Trace Generator, uma ferramenta que gera traces de exemplo que também envia os dados usando OTLP.
+
 ```bash
 # Encaminhar porta do Tempo
 kubectl port-forward svc/lgtm-tempo-distributor 4318:4318 -n monitoring
@@ -246,11 +254,19 @@ Como temos uma instância do Prometheus rodando dentro do cluster enviando métr
    - `rate(container_cpu_usage_seconds_total[5m])` - Uso de CPU
    - `container_memory_usage_bytes` - Uso de memória do container
 
-## 🔧 Componentes Adicionais
+## OpenTelemetry
+
+OpenTelemetry é um conjunto de APIs, bibliotecas, agentes e instrumentação para fornecer observabilidade para software nativo de nuvem. Consiste em três componentes principais:
+
+- **OpenTelemetry SDK**: Bibliotecas para instrumentar aplicações para coletar dados de telemetria (traces, métricas, logs).
+- **OpenTelemetry Collector**: Um agente agnóstico de fornecedor que coleta, processa e exporta dados de telemetria para backends.
+- **OpenTelemetry Protocol (OTLP)**: Um padrão para troca de dados de telemetria entre aplicações e backends.
+
+Neste setup, usaremos o OpenTelemetry Collector para direcionar os dados de telemetria para os backends apropriados (Loki, Tempo, Mimir).
 
 ### OpenTelemetry Collector
 
-O OpenTelemetry Collector atua como um hub central para todos os dados de telemetria, direcionando-os para os backends apropriados (Loki, Tempo, Mimir). Isso simplifica a integração de novos serviços/aplicações e garante que todos os dados de telemetria sejam coletados e armazenados corretamente.
+O OpenTelemetry Collector atua como um hub central para todos os dados de telemetria, direcionando-os para os backends apropriados (Loki, Tempo, Mimir).
 
 Para instalar o OpenTelemetry Collector:
 
