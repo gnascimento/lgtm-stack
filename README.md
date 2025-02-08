@@ -61,6 +61,7 @@ Production setup:
     - [Loki (Logs)](#loki-logs)
     - [Tempo (Traces)](#tempo-traces)
     - [Mimir (Metrics)](#mimir-metrics)
+- [Uninstall](#uninstall)
 
 ## Quick Start 
 
@@ -173,6 +174,26 @@ kubectl apply -f manifests/kubernetes-dashboards.yaml
 
 ## Testing
 
+After installation you can check components by running:
+
+```bash
+# Check if all pods are running
+kubectl get pods -n monitoring
+
+# To check logs
+
+# Loki
+kubectl logs -l app.kubernetes.io/name=loki -n monitoring
+
+# Tempo
+kubectl logs -l app.kubernetes.io/name=tempo -n monitoring
+
+# Mimir
+kubectl logs -l app.kubernetes.io/name=mimir -n monitoring
+```
+
+Follow the steps below to test each component:
+
 ### Access Grafana
 ```bash
 # Access dashboard
@@ -239,28 +260,6 @@ Since we have a Prometheus instance running inside the cluster sending basic met
    - `rate(container_cpu_usage_seconds_total[5m])` - CPU usage
    - `container_memory_usage_bytes` - Container memory usage
 
-### Troubleshooting Tips
-
-If components aren't working:
-
-1. Check pod status:
-```bash
-kubectl get pods -n monitoring
-```
-
-2. View component logs:
-```bash
-# For Loki
-kubectl logs -l app.kubernetes.io/name=loki -n monitoring
-
-# For Tempo
-kubectl logs -l app.kubernetes.io/name=tempo -n monitoring
-
-# For Mimir
-kubectl logs -l app.kubernetes.io/name=mimir -n monitoring
-```
-
-> Check official documentation for each component for more troubleshooting steps.
 
 ## Additional Components
 
@@ -333,6 +332,11 @@ processors:
 ## Uninstall
 
 ```bash
+# Using Makefile
+make uninstall
+
+# or manual
+
 # Remove LGTM stack
 helm uninstall lgtm -n monitoring
 
