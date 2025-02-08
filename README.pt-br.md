@@ -56,7 +56,7 @@ Ambiente de produção:
 - [Instalação de Dependências](#instalação-de-dependências-opcional)
 - [Testando](#testando)
   - [Acesso ao Grafana](#acesso-ao-grafana)
-  - [Teste dos Componentes](#teste-dos-componentes)
+  - [Enviando Dados](#enviando-dados)
     - [Loki (Logs)](#-loki-logs)
     - [Tempo (Traces)](#tempo-traces)
     - [Mimir (Métricas)](#mimir-métricas)
@@ -205,11 +205,11 @@ kubectl get secret --namespace monitoring lgtm-grafana -o jsonpath="{.data.admin
 - Usuário padrão: `admin`
 - URL de acesso: http://localhost:3000
 
-### Teste dos Componentes
+### Enviando Dados
 
 Após a instalação, verifique se cada componente está funcionando corretamente:
 
-#### 📝 Loki (Logs)
+#### Loki (Logs)
 Teste a ingestão e consulta de logs:
 
 ```bash
@@ -259,6 +259,8 @@ Como temos uma instância do Prometheus rodando dentro do cluster enviando métr
 3. Experimente estas consultas de exemplo:
    - `rate(container_cpu_usage_seconds_total[5m])` - Uso de CPU
    - `container_memory_usage_bytes` - Uso de memória do container
+
+Você também pode fazer o push de métricas personalizadas para o Mimir usando o Prometheus Pushgateway ou OpenTelemetry SDK, para o endpoint `http://lgtm-mimir-nginx.monitoring:80/api/v1/push`.
 
 ## OpenTelemetry
 

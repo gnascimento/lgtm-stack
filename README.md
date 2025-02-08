@@ -56,7 +56,7 @@ Production setup:
 - [Install dependencies](#install-dependencies)
 - [Testing](#testing)
   - [Access Grafana](#access-grafana)
-  - [Component Testing](#component-testing)
+  - [Sending Data](#sending-data)
     - [Loki (Logs)](#loki-logs)
     - [Tempo (Traces)](#tempo-traces)
     - [Mimir (Metrics)](#mimir-metrics)
@@ -211,7 +211,7 @@ kubectl get secret --namespace monitoring lgtm-grafana -o jsonpath="{.data.admin
 - Access URL: http://localhost:3000
 - Check default Grafana dashboards and Explore tab
 
-### Component Testing
+### Sending Data
 
 After installation, verify each component is working correctly:
 
@@ -266,6 +266,8 @@ Since we have a Prometheus instance running inside the cluster sending basic met
 3. Try these example queries:
    - `rate(container_cpu_usage_seconds_total[5m])` - CPU usage
    - `container_memory_usage_bytes` - Container memory usage
+
+You can also push custom metrics to Mimir using Prometheus Pushgateway or OpenTelemetry SDK, to endpoint `http://lgtm-mimir-nginx.monitoring:80/api/v1/push`.
 
 
 ## OpenTelemetry
