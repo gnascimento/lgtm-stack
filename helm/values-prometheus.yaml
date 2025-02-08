@@ -23,7 +23,7 @@ prometheus:
     metricRelabelings: []
     relabelings: []
 
-# For cloud provider environments
+# For cloud provider environments turn to false
 kubeScheduler:
   enabled: false
 kubeControllerManager:

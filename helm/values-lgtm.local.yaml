@@ -5,7 +5,7 @@ grafana:
   persistence:
     type: pvc
     enabled: true
-    storageClassName: standard-rwo
+    storageClassName: default
     accessModes:
       - ReadWriteOnce
     size: 10Gi

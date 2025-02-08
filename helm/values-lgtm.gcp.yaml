@@ -5,14 +5,14 @@ grafana:
   persistence:
     type: pvc
     enabled: true
-    storageClassName: standard-rwo
+    storageClassName: default
     accessModes:
       - ReadWriteOnce
-    size: 30Gi
+    size: 20Gi
   envFromSecret: grafana-env
   #grafana.ini:
   #  server:
-  #    root_url: https://hostname-here.com
+  #    root_url: https://hostname-here.com # change this
   
   resources:
     requests:
@@ -21,7 +21,7 @@ grafana:
 
  #ingress:
   # enabled: true
-    #hosts: ["hostname-here.com"]
+    #hosts: ["hostname-here.com"] # change this
 
   sidecar:
     dashboards:
@@ -519,8 +519,6 @@ tempo:
         enabled: true
       http:
         enabled: true
-
-  memcached:
     
   # Enable service graph generation
   metricsGenerator:
