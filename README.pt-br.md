@@ -9,18 +9,23 @@
 
 ## Introdução
 
-Um guia completo para implantação de uma plataforma de observabilidade no Kubernetes. A stack LGTM, da Grafana Labs, combina as melhores ferramentas open-source para fornecer visibilidade completa do sistema, consistindo em:
+A stack LGTM, da Grafana Labs, combina as melhores ferramentas open-source para fornecer visibilidade completa do sistema, consistindo em:
 
 - **Loki**: Armazenamento e gerenciamento de logs
 - **Tempo**: Armazenamento e gerenciamento de traces distribuídos
 - **Mimir**: Armazenamento de métricas a longo prazo
 - **Grafana**: Interface & Dashboards
 
+Com essa stack, temos uma solução completa de observabilidade que cobre logs, métricas e traces, com suporte para alta disponibilidade e escalabilidade, todos os dados ficam centralizados no Grafana para facilitar a análise e correlação de eventos, e por utilizar armazenamento em bucket (object storage) como backend, a solução se torna muito mais econômica em comparação com outras que necessitam de bancos de dados dedicados ou discos persistentes, como a ELK Stack.
+
+<div align="center">
+<h3> Esse guia irá te ajudar a configurar a stack LGTM no seu ambiente Kubernetes, seja para desenvolvimento local ou produção, também como configurar um coletor de open telemetry para direcionar todos os dados de telemetria para os backends apropriados.</h3>
+
 ## Arquitetura
 
 ![Arquitetura LGTM](./assets/images/lgtm.jpg)
 
-Cada componente (Loki, Grafana, Tempo, Mimir) roda no Kubernetes com seu próprio backend de armazenamento. Como exemplo, estamos usando o Cloud Storage da GCP, mas a stack também suportam AWS/Azure como backends, para desenvolvimento local podemos usar o MinIO.
+Cada componente (Loki, Grafana, Tempo, Mimir) roda no Kubernetes com seu próprio backend de armazenamento. Como exemplo, estamos usando o Cloud Storage da GCP, mas a stack também suportam AWS (s3)/Azure (blob storage) como backends, para desenvolvimento/teste local podemos usar o MinIO.
 
 A arquitetura também inclui três componentes opcionais:
 - Prometheus: coleta métricas do cluster (CPU/Memória) e envia para o Mimir

@@ -16,8 +16,7 @@ The LGTM stack, by Grafana Labs, combines best-in-class open-source tools to pro
 - **Mimir**: Long-term metrics storage
 - **Grafana**: Interface & Dashboards
 
-With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events.
-
+With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events, and by using bucket storage as a backend, the solution becomes much more economical compared to others that require dedicated databases or persistent disks, like the ELK Stack.
 
 <div align="center">
 <h3>This guide will help you set up the LGTM stack in your Kubernetes environment, whether for local development or production, also how to setup an open telemetry collector to route all telemetry data to the appropriate backends.</h3>
@@ -27,7 +26,7 @@ With this stack, we have a complete observability solution that covers logs, met
 
 ![LGTM Architecture](./assets/images/lgtm.jpg)
 
-Each component (Loki, Grafana, Tempo, Mimir) runs in Kubernetes with its own storage backend. For instance we are using GCP Cloud Storage as example, but they support AWS/Azure as backends too, for local development we can use MinIO.
+Each component (Loki, Grafana, Tempo, Mimir) runs in Kubernetes with its own storage backend. For instance we are using GCP Cloud Storage as example, but they support AWS (s3)/Azure (blob storage) as backends too, for local development we can use MinIO.
 
 Also this architecture includes three optional components:
 - Prometheus: collects cluster metrics (CPU/Memory) and sends to Mimir
