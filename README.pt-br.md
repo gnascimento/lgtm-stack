@@ -275,7 +275,7 @@ kubectl get pods -l app=otel-collector
 O OpenTelemetry Collector automaticamente direciona os dados para o backend apropriado com base no tipo de dado e porta. Aqui está como utilizá-lo:
 
 Para logs:
-Direcione seus coletores de logs ou aplicações para `http://otel-collector:3100`. O collector encaminhará tudo para o Loki.
+Direcione seus coletores de logs ou aplicações usando a biblioteca do Loki para `http://otel-collector:3100`.
 
 Para traces e métricas:
 Configure seu SDK OpenTelemetry para usar:
