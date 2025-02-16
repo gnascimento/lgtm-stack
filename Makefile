@@ -62,13 +62,18 @@ setup-repos: check-prereqs
 install-local: setup-repos ## Install LGTM stack for local development
 	@echo "$(BLUE)Installing LGTM stack locally...$(RESET)"
 	helm install prometheus-operator --version 66.3.1 -n monitoring \
-		prometheus-community/kube-prometheus-stack -f helm/values-prometheus.yaml
+		prometheus-community/kube-prometheus-stack -f helm/values-prometheus.yaml >/dev/null 
 	helm install lgtm --version 2.1.0 -n monitoring \
-		grafana/lgtm-distributed -f helm/values-lgtm.local.yaml
+		grafana/lgtm-distributed -f helm/values-lgtm.local.yaml >/dev/null 
 	@make install-deps
 	@echo "$(GREEN)LGTM stack installed successfully for local environment!$(RESET)"
+	@echo "$(YELLOW)Waiting for Grafana secret to be ready...$(RESET)"
+	@until kubectl get secret --namespace monitoring lgtm-grafana -o jsonpath="{.data.admin-password}" >/dev/null 2>&1; do \
+		sleep 5; \
+	done
 	@echo "$(YELLOW)Run 'kubectl port-forward svc/lgtm-grafana 3000:80 -n monitoring' to access Grafana$(RESET)"
-	@echo "$(YELLOW)Grafana password: $(shell make get-password)$(RESET)"
+	@echo "$(YELLOW)For grafana password run: make get-grafana-password$(RESET)"
+
 
 install-gcp: setup-repos check-gcp ## Install LGTM stack in GCP
 	@if [ -z "$(PROJECT_ID)" ]; then \
@@ -93,13 +98,13 @@ install-gcp: setup-repos check-gcp ## Install LGTM stack in GCP
 		--iam-account lgtm-monitoring@$(PROJECT_ID).iam.gserviceaccount.com
 	kubectl create secret generic lgtm-sa --from-file=key.json -n monitoring
 	helm install prometheus-operator --version 66.3.1 -n monitoring \
-		prometheus-community/kube-prometheus-stack -f helm/values-prometheus.yaml
+		prometheus-community/kube-prometheus-stack -f helm/values-prometheus.yaml >/dev/null 
 	helm install lgtm --version 2.1.0 -n monitoring \
-		grafana/lgtm-distributed -f helm/values-lgtm.gcp.yaml
+		grafana/lgtm-distributed -f helm/values-lgtm.gcp.yaml >/dev/null 
 	@make install-deps
 	@echo "$(GREEN)LGTM stack installed successfully in GCP!$(RESET)"
 	@echo "$(YELLOW)Run 'kubectl port-forward svc/lgtm-grafana 3000:80 -n monitoring' to access Grafana$(RESET)"
-	@echo "$(YELLOW)Grafana password: $(shell make get-password)$(RESET)"
+	@echo "$(YELLOW)For grafana password run: make get-grafana-password$(RESET)"
 
 install-deps: ## Install dependencies (promtail & dashboards)
 	@echo "$(BLUE)Installing dependencies...$(RESET)"
@@ -148,7 +153,7 @@ uninstall: ## Uninstall LGTM stack and dependencies
 
 clean: uninstall ## Alias for uninstall
 
-get-password:
+get-grafana-password:
 	@kubectl get secret --namespace monitoring lgtm-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
 
 clean-gcp:
