@@ -87,7 +87,7 @@ cd lgtm-stack
 make install-local # Para testes locais, para usar GCP cloud storage use make install-gcp e defina a variável PROJECT_ID
 ```
 
-Isso irá instalar a stack LGTM com os valores padrão para testes locais. Para personalizar a instalação, você pode editar os arquivos `helm/values-lgtm.local.yaml` antes de instalar.
+Isso irá instalar a stack LGTM usando a [lgtm-distributed](https://artifacthub.io/packages/helm/grafana/lgtm-distributed) helm chart, com os valores padrão para testes locais. Para personalizar a instalação, você pode editar os arquivos `helm/values-lgtm.local.yaml` antes de instalar.
 
 ### Opção 2: Instalação Manual
 

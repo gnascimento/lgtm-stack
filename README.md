@@ -89,7 +89,7 @@ cd lgtm-stack
 make install-local # For local testing, for using GCP cloud storage use make install-gcp and set PROJECT_ID
 ```
 
-This will install the LGTM stack with the default configuration for local development with the dependencies (promtail, dashboards, prometheus). If you want to customize the installation, you can edit the `helm/values-lgtm.local.yaml` file.
+This will install the LGTM stack using [lgtm-distributed](https://artifacthub.io/packages/helm/grafana/lgtm-distributed) helm chart, with the default configuration for local development with the dependencies (promtail, dashboards, prometheus). If you want to customize the installation, you can edit the `helm/values-lgtm.local.yaml` file.
 
 ### Option 2: Manual Installation
 
