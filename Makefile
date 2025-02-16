@@ -5,7 +5,6 @@ ENV ?= local
 # Default container runtime (docker or cri)
 RUNTIME ?= docker
 
-PROJECT_ID ?= $(shell gcloud config get-value project 2>/dev/null)
 REGION ?= us-east1
 
 BLUE := \033[36m
