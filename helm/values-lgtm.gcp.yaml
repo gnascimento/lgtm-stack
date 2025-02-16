@@ -179,6 +179,7 @@ loki:
     - name: GOOGLE_APPLICATION_CREDENTIALS
       value: /etc/secrets/key.json
 
+  # enable for better performance
   memcachedChunks:
     enabled: false
 
@@ -382,7 +383,7 @@ mimir:
       requests:
         cpu: 20m
     
-
+  # enable for better performance
   chunks-cache:
     enabled: false
     replicas: 1

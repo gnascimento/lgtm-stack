@@ -2,13 +2,6 @@
 grafana:
   # -- Deploy Grafana if enabled. See [upstream readme](https://github.com/grafana/helm-charts/tree/main/charts/grafana#configuration) for full values reference.
   enabled: true
-  persistence:
-    type: pvc
-    enabled: true
-    storageClassName: default
-    accessModes:
-      - ReadWriteOnce
-    size: 10Gi
   sidecar:
     dashboards:
       enabled: true
