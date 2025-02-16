@@ -73,6 +73,7 @@ Production setup:
 ### ✨ Prerequisites
 - [Helm v3+](https://helm.sh/docs/intro/install/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
+  - For local testing: [k3s](https://k3s.io/) or [minikube](https://minikube.sigs.k8s.io/docs/start/) kubernetes cluster configured
 - For GCP: [gcloud CLI](https://cloud.google.com/sdk/docs/install)
 
 ### Installation
@@ -85,7 +86,7 @@ To simplify the installation process, you can use the Makefile commands:
 # Clone repository
 git clone git@github.com:daviaraujocc/lgtm-stack.git
 cd lgtm-stack
-make install-local # For local testing, for using GCP cloud storage use make install-gcp
+make install-local # For local testing, for using GCP cloud storage use make install-gcp and set PROJECT_ID
 ```
 
 This will install the LGTM stack with the default configuration for local development with the dependencies (promtail, dashboards, prometheus). If you want to customize the installation, you can edit the `helm/values-lgtm.local.yaml` file.
@@ -313,10 +314,8 @@ Configure your OpenTelemetry SDK to use either:
 
 | Data Type | Protocol | Endpoint | Port |
 |-----------|----------|----------|------|
-| Traces | gRPC | otel-collector | 4317 |
-| Traces | HTTP | otel-collector | 4318 |
-| Metrics | gRPC | otel-collector | 4317 |
-| Metrics | HTTP | otel-collector | 4318 |
+| Traces,Metrics | gRPC | otel-collector | 4317 |
+| Traces,Metrics | HTTP | otel-collector | 4318 |
 | Logs | HTTP | otel-collector | 3100 |
 
 #### Extra Configuration

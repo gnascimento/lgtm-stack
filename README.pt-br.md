@@ -73,6 +73,7 @@ Ambiente de produção:
 ### ✨ Pré-requisitos
 - [Helm v3+](https://helm.sh/docs/intro/install/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
+  - Para instalação local: [k3s](https://k3s.io/) ou [minikube](https://minikube.sigs.k8s.io/docs/start/) kubernetes cluster configurado
 - Para GCP: [gcloud CLI](https://cloud.google.com/sdk/docs/install)
 
 ### Opção 1: Makefile
@@ -83,7 +84,7 @@ Para simplificar o processo de instalação, você pode usar os comandos do Make
 # Clonar repositório
 git clone git@github.com:daviaraujocc/lgtm-stack.git
 cd lgtm-stack
-make install-local # Para testes locais, para usar GCP cloud storage use make install-gcp
+make install-local # Para testes locais, para usar GCP cloud storage use make install-gcp e defina a variável PROJECT_ID
 ```
 
 Isso irá instalar a stack LGTM com os valores padrão para testes locais. Para personalizar a instalação, você pode editar os arquivos `helm/values-lgtm.local.yaml` antes de instalar.
