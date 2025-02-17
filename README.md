@@ -18,6 +18,7 @@ The LGTM stack, by Grafana Labs, combines best-in-class open-source tools to pro
 
 With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events, and by using bucket storage as a backend, the solution becomes much more economical compared to others that require dedicated databases or persistent disks, like the ELK Stack.
 
+
 <div align="center">
 <h3>This guide will help you set up the LGTM stack in your Kubernetes environment, whether for local development or production, also how to setup an open telemetry collector to route all telemetry data to the appropriate backends.</h3>
 </div>
@@ -76,6 +77,8 @@ Production setup:
   - For local testing: [k3s](https://k3s.io/) or [minikube](https://minikube.sigs.k8s.io/docs/start/) kubernetes cluster configured
 - For GCP: [gcloud CLI](https://cloud.google.com/sdk/docs/install)
 
+> **Note**: This guide uses the official [lgtm-distributed](https://artifacthub.io/packages/helm/grafana/lgtm-distributed) Helm chart from Grafana Labs for deployment.
+
 ### Installation
 
 ### Option 1: Makefile
@@ -89,12 +92,16 @@ cd lgtm-stack
 make install-local # For local testing, for using GCP cloud storage use make install-gcp and set PROJECT_ID
 ```
 
-This will install the LGTM stack using [lgtm-distributed](https://artifacthub.io/packages/helm/grafana/lgtm-distributed) helm chart, with the default configuration for local development with the dependencies (promtail, dashboards, prometheus). If you want to customize the installation, you can edit the `helm/values-lgtm.local.yaml` file.
+This will install the LGTM stack with the default configuration for local development with the dependencies (promtail, dashboards, prometheus). If you want to customize the installation, you can edit the `helm/values-lgtm.local.yaml` file.
 
 ### Option 2: Manual Installation
 
 ### Setup
 ```bash
+# Clone repository
+git clone git@github.com:daviaraujocc/lgtm-stack.git
+cd lgtm-stack
+
 # Add repositories & create namespace
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -155,7 +162,8 @@ kubectl create secret generic lgtm-sa --from-file=key.json -n monitoring
 
 2. Install LGTM stack:
 
-You can change values in `helm/values-lgtm.gcp.yaml` to fit your environment if you want like ingress for grafana, etc, the default values will be sufficient for most cases. 
+
+You can change values in `helm/values-lgtm.gcp.yaml` to fit your environment if you want like ingress for grafana, etc.
 
 ```bash
 helm install lgtm --version 2.1.0 -n monitoring \
