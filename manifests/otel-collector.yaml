@@ -67,12 +67,10 @@ spec:
           mountPath: /etc/otel-collector-config
         env:
         - name: GOMEMLIMIT
-          value: "800MiB"
+          value: "2GiB"
         resources:
-          requests:
-            memory: 500Mi
           limits:
-            memory: 800Mi
+            memory: 2Gi
       volumes:
       - name: config-volume
         configMap:
@@ -101,7 +99,7 @@ data:
       batch:
       memory_limiter:
         check_interval: 1s
-        limit_mib: 800
+        limit_mib: 2000
       attributes/loki:
         actions:
          - action: insert
