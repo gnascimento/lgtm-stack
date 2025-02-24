@@ -11,17 +11,16 @@
 
 A stack LGTM, da Grafana Labs, combina as melhores ferramentas open-source para fornecer visibilidade completa do sistema, consistindo em:
 
-- **Loki**: Armazenamento e gerenciamento de logs
-- **Tempo**: Armazenamento e gerenciamento de traces distribuídos
-- **Mimir**: Armazenamento de métricas a longo prazo
-- **Grafana**: Interface & Dashboards
-
-Com essa stack, temos uma solução completa de observabilidade que cobre logs, métricas e traces, com suporte para alta disponibilidade e escalabilidade, todos os dados ficam centralizados no Grafana para facilitar a análise e correlação de eventos, e por utilizar armazenamento em bucket (object storage) como backend, a solução se torna muito mais econômica em comparação com outras que necessitam de bancos de dados dedicados ou discos persistentes, como a ELK Stack.
+- **Loki**: Sistema de Agregação de logs https://grafana.com/oss/loki/
+- **Grafana**: Sistema para Interface & Dashboards https://grafana.com/oss/grafana/
+- **Tempo**: Armazenamento e gerenciamento de traces distribuídos https://grafana.com/oss/tempo/
+- **Mimir**: Armazenamento de métricas a longo prazo para o Prometheus https://grafana.com/oss/mimir/
 
 
-<div align="center">
-<h3> Esse guia irá te ajudar a configurar a stack LGTM no seu ambiente Kubernetes, seja para desenvolvimento local ou produção, também como configurar um coletor de open telemetry para direcionar todos os dados de telemetria para os backends apropriados.</h3>
-</div>
+Com essa stack, temos uma solução completa de observabilidade que cobre logs, métricas e traces, com suporte para alta disponibilidade e escalabilidade, todos os dados ficam centralizados no Grafana para facilitar a análise e correlação de eventos, e por utilizar armazenamento em bucket (object storage) como backend, a solução se torna muito mais econômica em comparação com outras que necessitam de bancos de dados dedicados ou discos persistentes.
+
+
+>Esse guia irá te ajudar a configurar a stack LGTM no seu ambiente Kubernetes, seja para desenvolvimento local ou produção, também como configurar um coletor de open telemetry para direcionar todos os dados de telemetria para os backends apropriados.
 
 ## Arquitetura
 
@@ -29,8 +28,9 @@ Com essa stack, temos uma solução completa de observabilidade que cobre logs, 
 
 Cada componente (Loki, Grafana, Tempo, Mimir) roda no Kubernetes com seu próprio backend de armazenamento. Como exemplo, estamos usando o Cloud Storage da GCP, mas a stack também suportam AWS (s3)/Azure (blob storage) como backends, para desenvolvimento/teste local podemos usar o MinIO.
 
-A arquitetura também inclui três componentes opcionais:
-- Prometheus: coleta métricas do cluster (CPU/Memória) e envia para o Mimir
+A arquitetura também inclui quatro componentes opcionais:
+- Prometheus: coleta métricas personalizadas de aplicações e do cluster e envia para o Mimir
+- Kube-state-metrics: coleta métricas (CPU/Memória etc) dos serviços/apps através do API server e expõe para o Prometheus
 - Promtail: agente que captura logs dos containers e envia para o Loki
 - OpenTelemetry Collector: encaminha todos os dados de telemetria para os backends apropriados, atuando como um hub central
 
@@ -69,7 +69,7 @@ Ambiente de produção:
         - [Personalização de Labels do Loki](#personalização-de-labels-do-loki)
 - [Desinstalação](#desinstalação)
   
-## Início Rápido
+## 🚀 Início Rápido
 
 ### ✨ Pré-requisitos
 - [Helm v3+](https://helm.sh/docs/intro/install/)

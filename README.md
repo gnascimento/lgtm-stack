@@ -11,26 +11,26 @@
 
 The LGTM stack, by Grafana Labs, combines best-in-class open-source tools to provide comprehensive system visibility, consisting of:
 
-- **Loki**: Log storage and management
-- **Tempo**: Distributed tracing storage and management
-- **Mimir**: Long-term metrics storage
-- **Grafana**: Interface & Dashboards
-
-With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events, and by using bucket storage as a backend, the solution becomes much more economical compared to others that require dedicated databases or persistent disks, like the ELK Stack.
+- **Loki**: Log aggregation system https://grafana.com/oss/loki/
+- **Grafana**: Interface & Dashboards https://grafana.com/oss/grafana/
+- **Tempo**: Distributed tracing storage and management https://grafana.com/oss/tempo/
+- **Mimir**: Long-term metrics storage for Prometheus https://grafana.com/oss/mimir/
 
 
-<div align="center">
-<h3>This guide will help you set up the LGTM stack in your Kubernetes environment, whether for local development or production, also how to setup an open telemetry collector to route all telemetry data to the appropriate backends.</h3>
-</div>
+With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events, and by using object storage as a backend, the solution becomes much more economical compared to others that require dedicated databases or persistent disks.
+
+
+>This guide will help you set up the LGTM stack in your Kubernetes environment, whether for local development or production, also how to setup an open telemetry collector to route all telemetry data to the appropriate backends.
 
 ### Architecture
 
 ![LGTM Architecture](./assets/images/lgtm.jpg)
 
-Each component (Loki, Grafana, Tempo, Mimir) runs in Kubernetes with its own storage backend. For instance we are using GCP Cloud Storage as example, but they support AWS (s3)/Azure (blob storage) as backends too, for local development we can use MinIO.
+Each component (Loki, Grafana, Tempo, Mimir) runs in Kubernetes with its own storage backend. For instance we are using GCP Cloud Storage as example, but the stack supports AWS (s3)/Azure (blob storage) as backends too, for local development we can use MinIO.
 
-Also this architecture includes three optional components:
-- Prometheus: collects cluster metrics (CPU/Memory) and sends to Mimir
+Also this architecture includes four optional components:
+- Prometheus: collects custom metrics from apps and cluster and sends to Mimir
+- Kube-state-metrics: collects metrics (CPU/Memory) of services/apps through the API server and outputs to Prometheus
 - Promtail: agent that captures container logs and sends to Loki
 - OpenTelemetry Collector: routes all telemetry data to appropriate backends, acts as a central hub
 
@@ -49,7 +49,7 @@ Production setup:
 
 ## Summary
 
-- [Quick Start](#quick-start)
+- [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
     - [Option 1: Makefile](#option-1-makefile)
@@ -69,7 +69,7 @@ Production setup:
         - [Loki Labels Customization](#loki-labels-customization)
 - [Uninstall](#uninstall)
 
-## Quick Start 
+## 🚀 Getting Started
 
 ### ✨ Prerequisites
 - [Helm v3+](https://helm.sh/docs/intro/install/)
