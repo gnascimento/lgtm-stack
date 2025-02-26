@@ -1,10 +1,10 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: sample-app-service
+  name: flask-app-service
 spec:
   selector:
-    app: sample-app
+    app: flask-app
   ports:
   - protocol: TCP
     port: 8000
@@ -13,23 +13,30 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sample-app
+  name: flask-app
   labels:
-    app: sample-app
+    app: flask-app
 spec:
   selector:
     matchLabels:
-      app: sample-app
+      app: flask-app
   replicas: 1
   template:
     metadata:
       labels:
-        app: sample-app
+        app: flask-app
     spec:
       containers:
-      - name: sample-app
-        image: david13356/sample-app-lgtm:latest
+      - name: flask-app
+        image: david13356/flask-app-lgtm:latest
         imagePullPolicy: Always
+        env:
+        - name: PORT
+          value: "8000"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector:4318"
         ports:
           - containerPort: 8000
+            protocol: TCP
+          - containerPort: 8888
             protocol: TCP
