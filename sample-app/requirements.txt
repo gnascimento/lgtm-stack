@@ -1,4 +1,0 @@
-flask==3.0.2
-opentelemetry-distro==0.43b0
-opentelemetry-exporter-otlp-proto-http==1.22.0
-opentelemetry-instrumentation-flask==0.43b0
