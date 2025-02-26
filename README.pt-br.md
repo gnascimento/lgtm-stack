@@ -49,24 +49,31 @@ Ambiente de produção:
 
 ## Sumário
 
-- [Início Rápido](#início-rápido)
+- [Introdução](#introdução)
+  - [Arquitetura](#arquitetura)
+  - [Requisitos de Hardware](#requisitos-de-hardware)
+- [Início Rápido](#-início-rápido)
   - [Pré-requisitos](#-pré-requisitos)
   - [Instalação](#instalação)
     - [Opção 1: Makefile](#opção-1-makefile)
     - [Opção 2: Instalação Manual](#opção-2-instalação-manual)
+      - [Configuração](#configuração)
+      - [Escolha seu Ambiente](#escolha-seu-ambiente)
+        - [Desenvolvimento Local](#desenvolvimento-local-k3s-minikube)
+        - [Configuração para Produção na GCP](#configuração-para-produção-na-gcp)
 - [Instalação de Dependências](#instalação-de-dependências-opcional)
 - [Testando](#testando)
   - [Acesso ao Grafana](#acesso-ao-grafana)
   - [Enviando Dados](#enviando-dados)
-    - [Loki (Logs)](#-loki-logs)
+    - [Loki (Logs)](#loki-logs)
     - [Tempo (Traces)](#tempo-traces)
     - [Mimir (Métricas)](#mimir-métricas)
 - [OpenTelemetry](#opentelemetry)
   - [OpenTelemetry Collector](#opentelemetry-collector)
-    - [Guia de Integração](#guia-de-integração)
-      - [Endpoints](#endpoints)
-      - [Configuração Extra](#configuração-extra)
-        - [Personalização de Labels do Loki](#personalização-de-labels-do-loki)
+  - [Integração com Flask App](#integração-com-flask-app)
+  - [Testando a Integração](#testando-a-integração)
+  - [Configuração Adicional](#configuração-adicional)
+    - [Personalização de Labels no Loki](#personalização-de-labels-no-loki)
 - [Desinstalação](#desinstalação)
   
 ## 🚀 Início Rápido
@@ -263,7 +270,7 @@ Para verificar:
 Como temos uma instância do Prometheus rodando dentro do cluster enviando métricas básicas (CPU/Memória) para o Mimir, você pode verificar as métricas já no Grafana:
 
 1. Acesse o Grafana
-2. Vá para Explore > Selecione fonte de dados Mimir
+2. Vá para Explore > Selecione a fonte de dados Mimir
 3. Experimente estas consultas de exemplo:
    - `rate(container_cpu_usage_seconds_total[5m])` - Uso de CPU
    - `container_memory_usage_bytes` - Uso de memória do container

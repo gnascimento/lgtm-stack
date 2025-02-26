@@ -46,12 +46,19 @@ Production setup:
 
 ## Summary
 
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
+- [Introduction](#introduction)
+  - [Architecture](#architecture)
+  - [Hardware Requirements](#hardware-requirements)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#-prerequisites)
   - [Installation](#installation)
     - [Option 1: Makefile](#option-1-makefile)
     - [Option 2: Manual Installation](#option-2-manual-installation)
-- [Install dependencies](#install-dependencies)
+      - [Setup](#setup)
+      - [Choose Your Environment](#choose-your-environment)
+        - [Local Development](#local-development-k3s-minikube)
+        - [GCP Production Setup](#gcp-production-setup)
+- [Install Dependencies](#install-dependencies)
 - [Testing](#testing)
   - [Access Grafana](#access-grafana)
   - [Sending Data](#sending-data)
@@ -60,10 +67,10 @@ Production setup:
     - [Mimir (Metrics)](#mimir-metrics)
 - [OpenTelemetry](#opentelemetry)
   - [OpenTelemetry Collector](#opentelemetry-collector)
-    - [Integration Guide](#integration-guide)
-      - [Endpoints Configuration](#endpoints)
-      - [Extra Configuration](#extra-configuration)
-        - [Loki Labels Customization](#loki-labels-customization)
+  - [Flask App Integration](#flask-app-integration)
+  - [Testing the Integration](#testing-the-integration)
+  - [Extra Configuration](#extra-configuration)
+    - [Loki Labels Customization](#loki-labels-customization)
 - [Uninstall](#uninstall)
 
 ## 🚀 Getting Started
