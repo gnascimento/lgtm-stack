@@ -278,11 +278,9 @@ OpenTelemetry é um conjunto de APIs, bibliotecas, agentes e instrumentação pa
 - **OpenTelemetry Collector**: Um agente agnóstico de fornecedor que coleta, processa e exporta dados de telemetria para backends.
 - **OpenTelemetry Protocol (OTLP)**: Um padrão para troca de dados de telemetria entre aplicações e backends.
 
-Neste setup, usaremos o OpenTelemetry Collector para direcionar os dados de telemetria para os backends apropriados (Loki, Tempo, Mimir).
+Nesta configuração, usaremos o OpenTelemetry Collector para rotear dados de telemetria para os backends apropriados (Loki, Tempo, Mimir).
 
 ### OpenTelemetry Collector
-
-O OpenTelemetry Collector atua como um hub central para todos os dados de telemetria, direcionando-os para os backends apropriados (Loki, Tempo, Mimir).
 
 Para instalar o OpenTelemetry Collector:
 
@@ -295,33 +293,81 @@ Verifique se o collector está em execução:
 
 ```bash
 kubectl get pods -l app=otel-collector
+kubectl logs -l app=otel-collector
 ```
 
-#### Guia de Integração
+### Integração com Flask App
 
-O OpenTelemetry Collector automaticamente direciona os dados para o backend apropriado com base no tipo de dado e porta. Aqui está como utilizá-lo:
+Usaremos uma aplicação Flask pré-instrumentada (código fonte em `flask-app/`) que gera traces, métricas e logs usando OpenTelemetry.
 
-Para logs:
-Direcione seus coletores de logs ou aplicações usando a biblioteca do Loki para `http://otel-collector:3100`.
+A aplicação expõe um endpoint `/random` que retorna números aleatórios e gera dados de telemetria. O endpoint padrão usado para enviar dados de telemetria será `http://otel-collector:4318`.
 
-Para traces e métricas:
-Configure seu SDK OpenTelemetry para usar:
-- Endpoint gRPC: `otel-collector:4317`
-- Endpoint HTTP: `http://otel-collector:4318`
+1. Implante a aplicação de exemplo:
+```bash
+# Implantar aplicação de exemplo
+kubectl apply -f manifests/app/flask-app.yaml
+```
 
-##### Endpoints
+2. Verifique a implantação da aplicação:
+```bash
+kubectl get pods -l app=flask-app 
+kubectl get svc flask-app-service 
+```
 
-| Tipo de Dado | Protocolo | Endpoint | Porta |
-|--------------|-----------|----------|-------|
-| Traces | gRPC | otel-collector | 4317 |
-| Traces | HTTP | otel-collector | 4318 |
-| Métricas | gRPC | otel-collector | 4317 |
-| Métricas | HTTP | otel-collector | 4318 |
-| Logs | HTTP | otel-collector | 3100 |
+3. Aplique o PodMonitor para coleta de métricas:
+```bash
+kubectl apply -f manifests/app/podmonitor.yaml
+```
 
-#### Configuração Extra
+### Testando a integração
 
-##### Personalização de Labels do Loki
+1. Gere tráfego para a aplicação:
+```bash
+# Obtenha a URL da aplicação
+# Port-forward da aplicação
+kubectl port-forward svc/flask-app 8000:8000 -n monitoring
+
+# Envie requisições para gerar dados de telemetria
+for i in {1..50}; do
+  curl http://localhost:8000/random
+  sleep 0.5
+done
+```
+
+2. Verifique os dados de telemetria gerados no Grafana:
+
+**Traces (Tempo):**
+
+1. Vá para Explore > Selecione a fonte de dados Tempo
+
+2. Pesquise por Service Name: flask-app
+
+3. Você deverá ver traces com operações GET /random
+
+**Métricas (Mimir):**
+
+1. Vá para Explore > Selecione a fonte de dados Mimir
+
+2. Experimente estas consultas:
+```promql
+# Contagem total de requisições
+rate(request_count_total[5m])
+```
+
+**Logs (Loki):**
+
+1. Vá para Explore > Selecione a fonte de dados Loki
+
+2. Consulte usando labels:
+
+```logql
+{job="flask-app"}
+```
+Você deverá ver logs estruturados da aplicação.
+
+#### Configuração Adicional
+
+##### Personalização de Labels no Loki
 
 Caso você tenha novos labels que deseja adicionar aos logs no Loki através do OpenTelemetry Collector, você precisa realizar a seguinte configuração:
 

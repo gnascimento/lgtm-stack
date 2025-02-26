@@ -19,9 +19,6 @@ The LGTM stack, by Grafana Labs, combines best-in-class open-source tools to pro
 
 With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events, and by using object storage as a backend, the solution becomes much more economical compared to others that require dedicated databases or persistent disks.
 
-
->This guide will help you set up the LGTM stack in your Kubernetes environment, whether for local development or production, also how to setup an open telemetry collector to route all telemetry data to the appropriate backends.
-
 ### Architecture
 
 ![LGTM Architecture](./assets/images/lgtm.jpg)
@@ -178,8 +175,8 @@ helm install lgtm --version 2.1.0 -n monitoring \
 # Check if you are using Docker or CRI-O runtime
 ## Docker runtime
 kubectl apply -f manifests/promtail.docker.yaml
-## CRI-O runtime
-kubectl apply -f manifests/promtail.cri.yaml
+## CRI-O runtime 
+## kubectl apply -f manifests/promtail.cri.yaml
 
 # Install kubernetes dashboards for grafana
 kubectl apply -f manifests/kubernetes-dashboards.yaml
@@ -291,8 +288,6 @@ In this setup, we will use the OpenTelemetry Collector to route telemetry data t
 
 ### OpenTelemetry Collector
 
-The OpenTelemetry Collector acts as a central hub for all telemetry data, routing it to the appropriate backends (Loki, Tempo, Mimir).
-
 To install the OpenTelemetry Collector:
 
 ```bash
@@ -304,27 +299,78 @@ Check if the collector is up and running:
 
 ```bash
 kubectl get pods -l app=otel-collector
+kubectl logs -l app=otel-collector
 ```
 
-#### Integration Guide
+### Flask App Integration
 
-The OpenTelemetry Collector automatically routes data to the appropriate backend based on the data type and port. Here's how to use it:
+We'll use a pre-instrumented Flask application (source code at `flask-app/`) that generates traces, metrics, and logs using OpenTelemetry.
 
-For logs:
-Point your log shippers or applications using Loki library to `http://otel-collector:3100`.
+The application exposes an endpoint `/random` that returns random numbers and generates telemetry data. The default endpoint used for sending telemetry data will be `http://otel-collector:4318`.
 
-For traces and metrics:
-Configure your OpenTelemetry SDK to use either:
-- gRPC endpoint: `otel-collector:4317`  
-- HTTP endpoint: `http://otel-collector:4318`
 
-##### Endpoints
+1. Deploy the sample application:
+```bash
+# Deploy sample app
+kubectl apply -f manifests/app/flask-app.yaml
+```
 
-| Data Type | Protocol | Endpoint | Port |
-|-----------|----------|----------|------|
-| Traces,Metrics | gRPC | otel-collector | 4317 |
-| Traces,Metrics | HTTP | otel-collector | 4318 |
-| Logs | HTTP | otel-collector | 3100 |
+2. Verify application deployment:
+```bash
+kubectl get pods -l app=flask-app 
+kubectl get svc flask-app-service 
+```
+
+3. Apply PodMonitor for metrics scraping:
+```bash
+kubectl apply -f manifests/app/podmonitor.yaml
+```
+
+### Testing the integration
+
+1. Generate traffic to the application:
+```bash
+# Get the application URL
+# Port-forward the application
+kubectl port-forward svc/flask-app 8000:8000 -n monitoring
+
+# Send requests to generate telemetry data
+for i in {1..50}; do
+  curl http://localhost:8000/random
+  sleep 0.5
+done
+```
+
+2. Check the generated telemetry data in Grafana:
+
+**Traces (Tempo):**
+
+1. Go to Explore > Select Tempo datasource
+
+2. Search for Service Name: flask-app
+
+3. You should see traces with GET /random operations
+
+**Metrics (Mimir):**
+
+1. Go to Explore > Select Mimir datasource
+
+2. Try these queries:
+```promql
+# Total requests count
+rate(request_count_total[5m])
+```
+
+**Logs (Loki):**
+
+1. Go to Explore > Select Loki datasource
+
+2. Query using labels:
+
+```logql
+{job="flask-app"}
+```
+You should see structured logs from the application.
 
 #### Extra Configuration
 
