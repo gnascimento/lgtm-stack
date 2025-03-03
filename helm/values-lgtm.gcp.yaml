@@ -145,7 +145,7 @@ loki:
     resources:
       requests:
         cpu: 20m
-        memory: 4Gi
+        memory: 1Gi
     
     extraVolumes:
     - name: lgtm-sa-volume
@@ -166,7 +166,7 @@ loki:
     resources:
       requests:
         cpu: 20m
-        memory: 2Gi
+        memory: 500Mi
     
     extraVolumes:
     - name: lgtm-sa-volume
@@ -246,7 +246,7 @@ mimir:
         memory: 4Gi
       requests:
         cpu: 20m
-        memory: 1Gi
+        memory: 500Mi
     
 
   ingester:
@@ -266,7 +266,7 @@ mimir:
         memory: 6Gi
       requests:
         cpu: 20m
-        memory: 3Gi
+        memory: 1Gi
     
     zoneAwareReplication:
       enabled: false
@@ -303,7 +303,7 @@ mimir:
       limits:
         memory: 2Gi
       requests:
-        memory: 1Gi
+        memory: 500Mi
     
 
   overrides_exporter:
@@ -319,7 +319,7 @@ mimir:
         memory: 4Gi
       requests:
         cpu: 20m
-        memory: 1Gi
+        memory: 500Mi
     
     extraVolumes:
     - name: lgtm-sa-volume
@@ -336,7 +336,7 @@ mimir:
         memory: 2Gi
       requests:
         cpu: 20m
-        memory: 1Gi
+        memory: 500Mi
     
 
   query_scheduler:
@@ -443,7 +443,7 @@ tempo:
     resources:
       requests:
         cpu: 20m
-        memory: 1Gi
+        memory: 500Mi
     
     extraVolumes:
     - name: lgtm-sa-volume
@@ -479,7 +479,7 @@ tempo:
     resources:
       requests:
         cpu: 20m
-        memory: 1Gi
+        memory: 500Mi
     #config:
     #  compaction:
     #     block_retention: 720h
