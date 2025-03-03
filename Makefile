@@ -115,7 +115,6 @@ install-deps: ## Install dependencies (promtail & dashboards)
 	else \
 		echo "$(RED)Invalid runtime. Use RUNTIME=docker or RUNTIME=cri$(RESET)" && exit 1; \
 	fi
-	kubectl apply -f manifests/kubernetes-dashboards.yaml
 	@echo "✅ Dependencies installed"
 
 ##@ Validation
