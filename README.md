@@ -184,9 +184,6 @@ helm install lgtm --version 2.1.0 -n monitoring \
 kubectl apply -f manifests/promtail.docker.yaml
 ## CRI-O runtime 
 ## kubectl apply -f manifests/promtail.cri.yaml
-
-# Install kubernetes dashboards for grafana
-kubectl apply -f manifests/kubernetes-dashboards.yaml
 ```
 
 

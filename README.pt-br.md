@@ -181,10 +181,7 @@ helm install lgtm --version 2.1.0 -n monitoring \
 ## Ambiente Docker
 kubectl apply -f manifests/promtail.docker.yaml
 ## Ambiente CRI
-kubectl apply -f manifests/promtail.cri.yaml
-
-# Instalar dashboards do kubernetes
-kubectl apply -f manifests/kubernetes-dashboards.yaml
+# kubectl apply -f manifests/promtail.cri.yaml
 ```
 
 ## Testando
