@@ -7,46 +7,6 @@
 
 # 🔍 Stack LGTM para Kubernetes
 
-## Introdução
-
-A stack LGTM, da Grafana Labs, combina as melhores ferramentas open-source para fornecer visibilidade completa do sistema, consistindo em:
-
-- **Loki**: Sistema de Agregação de logs https://grafana.com/oss/loki/
-- **Grafana**: Sistema para Interface & Dashboards https://grafana.com/oss/grafana/
-- **Tempo**: Armazenamento e gerenciamento de traces distribuídos https://grafana.com/oss/tempo/
-- **Mimir**: Armazenamento de métricas a longo prazo para o Prometheus https://grafana.com/oss/mimir/
-
-
-Com essa stack, temos uma solução completa de observabilidade que cobre logs, métricas e traces, com suporte para alta disponibilidade e escalabilidade, todos os dados ficam centralizados no Grafana para facilitar a análise e correlação de eventos, e por utilizar armazenamento em bucket (object storage) como backend, a solução se torna muito mais econômica em comparação com outras que necessitam de bancos de dados dedicados ou discos persistentes.
-
-
->Esse guia irá te ajudar a configurar a stack LGTM no seu ambiente Kubernetes, seja para desenvolvimento local ou produção, também como configurar um coletor de open telemetry para direcionar todos os dados de telemetria para os backends apropriados.
-
-## Arquitetura
-
-![Arquitetura LGTM](./assets/images/lgtm.jpg)
-
-Cada componente (Loki, Grafana, Tempo, Mimir) roda no Kubernetes com seu próprio backend de armazenamento. Como exemplo, estamos usando o Cloud Storage da GCP, mas a stack também suportam AWS (s3)/Azure (blob storage) como backends, para desenvolvimento/teste local podemos usar o MinIO.
-
-A arquitetura também inclui quatro componentes opcionais:
-- Prometheus: coleta métricas personalizadas de aplicações e do cluster e envia para o Mimir
-- Kube-state-metrics: coleta métricas (CPU/Memória etc) dos serviços/apps através do API server e expõe para o Prometheus
-- Promtail: agente que captura logs dos containers e envia para o Loki
-- OpenTelemetry Collector: encaminha todos os dados de telemetria para os backends apropriados, atuando como um hub central
-
-### Requisitos de Hardware
-
-Desenvolvimento local:
-- 2-4 CPUs
-- 8 GB RAM
-- 50 GB de espaço em disco
-
-Ambiente de produção:
-- Pode variar muito dependendo da quantidade de dados e tráfego, é recomendado começar com uma configuração pequena e escalar conforme necessário, para ambientes pequenos e médios a seguinte configuração é recomendada (mínimo):
-  - 8 CPUs
-  - 24 GB RAM
-  - 100 GB de espaço em disco (SSD, não conta para backends de armazenamento)
-
 ## Sumário
 
 - [Introdução](#introdução)
@@ -75,6 +35,56 @@ Ambiente de produção:
   - [Configuração Adicional](#configuração-adicional)
     - [Personalização de Labels no Loki](#personalização-de-labels-no-loki)
 - [Desinstalação](#desinstalação)
+
+## Introdução
+
+A stack LGTM, da Grafana Labs, combina as melhores ferramentas open-source para fornecer visibilidade completa do sistema, consistindo em:
+
+- **Loki**: Sistema de Agregação de logs https://grafana.com/oss/loki/
+- **Grafana**: Sistema para Interface & Dashboards https://grafana.com/oss/grafana/
+- **Tempo**: Armazenamento e gerenciamento de traces distribuídos https://grafana.com/oss/tempo/
+- **Mimir**: Armazenamento de métricas a longo prazo para o Prometheus https://grafana.com/oss/mimir/
+
+
+Com essa stack, temos uma solução completa de observabilidade que cobre logs, métricas e traces, com suporte para alta disponibilidade e escalabilidade, todos os dados ficam centralizados no Grafana para facilitar a análise e correlação de eventos, e por utilizar armazenamento em bucket (object storage) como backend, a solução se torna muito mais econômica em comparação com outras que necessitam de bancos de dados dedicados ou discos persistentes.
+
+
+>Esse guia irá te ajudar a configurar a stack LGTM no seu ambiente Kubernetes, seja para desenvolvimento local ou produção, também como configurar um coletor de open telemetry para direcionar todos os dados de telemetria para os backends apropriados.
+
+## Arquitetura
+
+![Arquitetura LGTM](./assets/images/lgtm.jpg)
+
+A arquitetura da stack LGTM em um ambiente Kubernetes segue um fluxo bem definido de coleta, processamento e visualização de dados:
+
+1. As aplicações enviam dados de telemetria para um agente, nesse caso o OpenTelemetry Collector.
+
+2. O OpenTelemetry Collector atua como hub central, roteando cada tipo de dado para seu backend específico:
+  * Loki: para processamento de logs
+  * Mimir: para armazenamento de métricas
+  * Tempo: para análise de traces
+3. Os dados são armazenados em um Object Storage, com buckets dedicados para cada ferramenta
+
+4. O Grafana é a interface, aonde todos os dados são consultados, permitindo dashboards e alertas unificados
+
+A arquitetura também inclui quatro componentes opcionais:
+- Prometheus: coleta métricas personalizadas de aplicações e do cluster e envia para o Mimir
+- Kube-state-metrics: coleta métricas (CPU/Memória etc) dos serviços/apps através do API server e expõe para o Prometheus
+- Promtail: agente que captura logs dos containers e envia para o Loki
+
+### Requisitos de Hardware
+
+Desenvolvimento local:
+- 2-4 CPUs
+- 8 GB RAM
+- 50 GB de espaço em disco
+
+Ambiente de produção:
+- Pode variar muito dependendo da quantidade de dados e tráfego, é recomendado começar com uma configuração pequena e escalar conforme necessário, para ambientes pequenos e médios a seguinte configuração é recomendada (mínimo):
+  - 8 CPUs
+  - 24 GB RAM
+  - 100 GB de espaço em disco (SSD, não conta para backends de armazenamento)
+
   
 ## 🚀 Início Rápido
 

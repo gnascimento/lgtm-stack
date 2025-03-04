@@ -7,43 +7,6 @@
 
 # 🔍 LGTM Stack for Kubernetes
 
-## Introduction
-
-The LGTM stack, by Grafana Labs, combines best-in-class open-source tools to provide comprehensive system visibility, consisting of:
-
-- **Loki**: Log aggregation system https://grafana.com/oss/loki/
-- **Grafana**: Interface & Dashboards https://grafana.com/oss/grafana/
-- **Tempo**: Distributed tracing storage and management https://grafana.com/oss/tempo/
-- **Mimir**: Long-term metrics storage for Prometheus https://grafana.com/oss/mimir/
-
-
-With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events, and by using object storage as a backend, the solution becomes much more economical compared to others that require dedicated databases or persistent disks.
-
-### Architecture
-
-![LGTM Architecture](./assets/images/lgtm.jpg)
-
-Each component (Loki, Grafana, Tempo, Mimir) runs in Kubernetes with its own storage backend. For instance we are using GCP Cloud Storage as example, but the stack supports AWS (s3)/Azure (blob storage) as backends too, for local development we can use MinIO.
-
-Also this architecture includes four optional components:
-- Prometheus: collects custom metrics from apps and cluster and sends to Mimir
-- Kube-state-metrics: collects metrics (CPU/Memory) of services/apps through the API server and outputs to Prometheus
-- Promtail: agent that captures container logs and sends to Loki
-- OpenTelemetry Collector: routes all telemetry data to appropriate backends, acts as a central hub
-
-### Hardware Requirements
-
-Local development:
-- 2-4 CPUs
-- 8 GB RAM
-- 50 GB disk space
-
-Production setup:
-- Can vary a lot depending on the amount of data and traffic, it's recommended to start with a small setup and scale as needed, for small-mid environments the following is recommended (minimum):
-  - 8 CPUs
-  - 24 GB RAM
-  - 100 GB disk space (SSD, don't count for storage backends)
-
 ## Summary
 
 - [Introduction](#introduction)
@@ -72,6 +35,53 @@ Production setup:
   - [Extra Configuration](#extra-configuration)
     - [Loki Labels Customization](#loki-labels-customization)
 - [Uninstall](#uninstall)
+
+## Introduction
+
+The LGTM stack, by Grafana Labs, combines best-in-class open-source tools to provide comprehensive system visibility, consisting of:
+
+- **Loki**: Log aggregation system https://grafana.com/oss/loki/
+- **Grafana**: Interface & Dashboards https://grafana.com/oss/grafana/
+- **Tempo**: Distributed tracing storage and management https://grafana.com/oss/tempo/
+- **Mimir**: Long-term metrics storage for Prometheus https://grafana.com/oss/mimir/
+
+
+With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events, and by using object storage as a backend, the solution becomes much more economical compared to others that require dedicated databases or persistent disks.
+
+### Architecture
+
+![LGTM Architecture](./assets/images/lgtm.jpg)
+
+The architecture of the LGTM stack in a Kubernetes environment follows a well-defined flow of data collection, processing, and visualization:
+
+1. Applications send telemetry data to an agent, in this case, the OpenTelemetry Collector.
+
+2. OpenTelemetry Collector acts as a central hub, routing each type of data to its specific backend:
+* Loki: for log processing
+* Mimir: for metrics storage
+* Tempo: for trace analysis
+3. Data is stored in an Object Storage, with dedicated buckets for each tool.
+
+4. Grafana is the interface where all data is queried, allowing for unified dashboards and alerts.
+
+Also this architecture includes four optional components:
+- Prometheus: collects custom metrics from apps and cluster and sends to Mimir
+- Kube-state-metrics: collects metrics (CPU/Memory) of services/apps through the API server and outputs to Prometheus
+- Promtail: agent that captures container logs and sends to Loki
+
+### Hardware Requirements
+
+Local development:
+- 2-4 CPUs
+- 8 GB RAM
+- 50 GB disk space
+
+Production setup:
+- Can vary a lot depending on the amount of data and traffic, it's recommended to start with a small setup and scale as needed, for small-mid environments the following is recommended (minimum):
+  - 8 CPUs
+  - 24 GB RAM
+  - 100 GB disk space (SSD, don't count for storage backends)
+
 
 ## 🚀 Getting Started
 
