@@ -19,7 +19,7 @@
     - [Opção 2: Instalação Manual](#opção-2-instalação-manual)
       - [Configuração](#configuração)
       - [Escolha seu Ambiente](#escolha-seu-ambiente)
-        - [Desenvolvimento Local](#desenvolvimento-local-k3s-minikube)
+        - [Local](#local-k3s-minikube)
         - [Configuração para Produção na GCP](#configuração-para-produção-na-gcp)
 - [Instalação de Dependências](#instalação-de-dependências-opcional)
 - [Testando](#testando)
@@ -49,8 +49,6 @@ A stack LGTM, da Grafana Labs, combina as melhores ferramentas open-source para 
 Com essa stack, temos uma solução completa de observabilidade que cobre logs, métricas e traces, com suporte para alta disponibilidade e escalabilidade, todos os dados ficam centralizados no Grafana para facilitar a análise e correlação de eventos, e por utilizar armazenamento em bucket (object storage) como backend, a solução se torna muito mais econômica em comparação com outras que necessitam de bancos de dados dedicados ou discos persistentes.
 
 
->Esse guia irá te ajudar a configurar a stack LGTM no seu ambiente Kubernetes, seja para desenvolvimento local ou produção, também como configurar um coletor de open telemetry para direcionar todos os dados de telemetria para os backends apropriados.
-
 ## Arquitetura
 
 ![Arquitetura LGTM](./assets/images/lgtm.jpg)
@@ -74,10 +72,9 @@ A arquitetura também inclui quatro componentes opcionais:
 
 ### Requisitos de Hardware
 
-Desenvolvimento local:
+Local:
 - 2-4 CPUs
 - 8 GB RAM
-- 50 GB de espaço em disco
 
 Ambiente de produção:
 - Pode variar muito dependendo da quantidade de dados e tráfego, é recomendado começar com uma configuração pequena e escalar conforme necessário, para ambientes pequenos e médios a seguinte configuração é recomendada (mínimo):
@@ -130,9 +127,9 @@ helm install prometheus-operator --version 66.3.1 -n monitoring \
 
 ### Escolha seu Ambiente
 
-#### Desenvolvimento Local (k3s, minikube)
+#### Local (k3s, minikube)
 
-Para cenários de teste e desenvolvimento local. Utiliza armazenamento local via MinIO.
+Para cenários de teste local. Utiliza armazenamento local via MinIO.
 
 ```bash
 helm install lgtm --version 2.1.0 -n monitoring \

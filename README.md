@@ -19,7 +19,7 @@
     - [Option 2: Manual Installation](#option-2-manual-installation)
       - [Setup](#setup)
       - [Choose Your Environment](#choose-your-environment)
-        - [Local Development](#local-development-k3s-minikube)
+        - [Local](#local-k3s-minikube)
         - [GCP Production Setup](#gcp-production-setup)
 - [Install Dependencies](#install-dependencies)
 - [Testing](#testing)
@@ -71,10 +71,9 @@ Also this architecture includes four optional components:
 
 ### Hardware Requirements
 
-Local development:
+Local:
 - 2-4 CPUs
 - 8 GB RAM
-- 50 GB disk space
 
 Production setup:
 - Can vary a lot depending on the amount of data and traffic, it's recommended to start with a small setup and scale as needed, for small-mid environments the following is recommended (minimum):
@@ -106,7 +105,7 @@ cd lgtm-stack
 make install-local # For local testing, for using GCP cloud storage use make install-gcp and set PROJECT_ID
 ```
 
-This will install the LGTM stack with the default configuration for local development with the dependencies (promtail, dashboards, prometheus). If you want to customize the installation, you can edit the `helm/values-lgtm.local.yaml` file.
+This will install the LGTM stack with the default configuration for local with the dependencies (promtail, dashboards, prometheus). If you want to customize the installation, you can edit the `helm/values-lgtm.local.yaml` file.
 
 ### Option 2: Manual Installation
 
@@ -129,9 +128,9 @@ helm install prometheus-operator --version 66.3.1 -n monitoring \
 
 ### Choose Your Environment
 
-#### Local Development (k3s, minikube)
+#### Local (k3s, minikube)
 
-For local testing and development scenarios. Uses local storage via MinIO.
+For local testing scenarios. Uses local storage via MinIO.
 
 ```bash
 helm install lgtm --version 2.1.0 -n monitoring \
