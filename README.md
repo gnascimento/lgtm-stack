@@ -7,10 +7,21 @@
 
 # 🔍 LGTM Stack for Kubernetes
 
+## Introduction
+
+The LGTM stack, by Grafana Labs, combines best-in-class open-source tools to provide comprehensive system visibility, consisting of:
+
+- **Loki**: Log aggregation system https://grafana.com/oss/loki/
+- **Grafana**: Interface & Dashboards https://grafana.com/oss/grafana/
+- **Tempo**: Distributed tracing storage and management https://grafana.com/oss/tempo/
+- **Mimir**: Long-term metrics storage for Prometheus https://grafana.com/oss/mimir/
+
+
+With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events, and by using object storage as a backend, the solution becomes much more economical compared to others that require dedicated databases or persistent disks.
+
 ## Summary
 
-- [Introduction](#introduction)
-  - [Architecture](#architecture)
+- [Architecture](#architecture)
   - [Hardware Requirements](#hardware-requirements)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#-prerequisites)
@@ -35,18 +46,6 @@
   - [Extra Configuration](#extra-configuration)
     - [Loki Labels Customization](#loki-labels-customization)
 - [Uninstall](#uninstall)
-
-## Introduction
-
-The LGTM stack, by Grafana Labs, combines best-in-class open-source tools to provide comprehensive system visibility, consisting of:
-
-- **Loki**: Log aggregation system https://grafana.com/oss/loki/
-- **Grafana**: Interface & Dashboards https://grafana.com/oss/grafana/
-- **Tempo**: Distributed tracing storage and management https://grafana.com/oss/tempo/
-- **Mimir**: Long-term metrics storage for Prometheus https://grafana.com/oss/mimir/
-
-
-With this stack, we have a complete observability solution that covers logs, metrics, and traces, with support for high availability and scalability, plus all data will be present in a single location (grafana), making it easier to analyze and correlate events, and by using object storage as a backend, the solution becomes much more economical compared to others that require dedicated databases or persistent disks.
 
 ### Architecture
 

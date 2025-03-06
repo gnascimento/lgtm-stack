@@ -7,10 +7,21 @@
 
 # 🔍 Stack LGTM para Kubernetes
 
+## Introdução
+
+A stack LGTM, da Grafana Labs, combina as melhores ferramentas open-source para fornecer visibilidade completa do sistema, consistindo em:
+
+- **Loki**: Sistema de Agregação de logs https://grafana.com/oss/loki/
+- **Grafana**: Sistema para Interface & Dashboards https://grafana.com/oss/grafana/
+- **Tempo**: Armazenamento e gerenciamento de traces distribuídos https://grafana.com/oss/tempo/
+- **Mimir**: Armazenamento de métricas a longo prazo para o Prometheus https://grafana.com/oss/mimir/
+
+
+Com essa stack, temos uma solução completa de observabilidade que cobre logs, métricas e traces, com suporte para alta disponibilidade e escalabilidade, todos os dados ficam centralizados no Grafana para facilitar a análise e correlação de eventos, e por utilizar armazenamento em bucket (object storage) como backend, a solução se torna muito mais econômica em comparação com outras que necessitam de bancos de dados dedicados ou discos persistentes.
+
 ## Sumário
 
-- [Introdução](#introdução)
-  - [Arquitetura](#arquitetura)
+- [Arquitetura](#arquitetura)
   - [Requisitos de Hardware](#requisitos-de-hardware)
 - [Início Rápido](#-início-rápido)
   - [Pré-requisitos](#-pré-requisitos)
@@ -35,19 +46,6 @@
   - [Configuração Adicional](#configuração-adicional)
     - [Personalização de Labels no Loki](#personalização-de-labels-no-loki)
 - [Desinstalação](#desinstalação)
-
-## Introdução
-
-A stack LGTM, da Grafana Labs, combina as melhores ferramentas open-source para fornecer visibilidade completa do sistema, consistindo em:
-
-- **Loki**: Sistema de Agregação de logs https://grafana.com/oss/loki/
-- **Grafana**: Sistema para Interface & Dashboards https://grafana.com/oss/grafana/
-- **Tempo**: Armazenamento e gerenciamento de traces distribuídos https://grafana.com/oss/tempo/
-- **Mimir**: Armazenamento de métricas a longo prazo para o Prometheus https://grafana.com/oss/mimir/
-
-
-Com essa stack, temos uma solução completa de observabilidade que cobre logs, métricas e traces, com suporte para alta disponibilidade e escalabilidade, todos os dados ficam centralizados no Grafana para facilitar a análise e correlação de eventos, e por utilizar armazenamento em bucket (object storage) como backend, a solução se torna muito mais econômica em comparação com outras que necessitam de bancos de dados dedicados ou discos persistentes.
-
 
 ## Arquitetura
 
