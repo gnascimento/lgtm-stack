@@ -67,7 +67,7 @@ A arquitetura da stack LGTM em um ambiente Kubernetes segue um fluxo bem definid
 
 4. O Grafana é a interface, aonde todos os dados são consultados, permitindo dashboards e alertas unificados
 
-A arquitetura também inclui quatro componentes opcionais:
+A arquitetura também inclui três componentes opcionais:
 - Prometheus: coleta métricas personalizadas de aplicações e do cluster e envia para o Mimir
 - Kube-state-metrics: coleta métricas (CPU/Memória etc) dos serviços/apps através do API server e expõe para o Prometheus
 - Promtail: agente que captura logs dos containers e envia para o Loki
