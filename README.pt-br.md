@@ -19,8 +19,9 @@ A stack LGTM, da Grafana Labs, combina as melhores ferramentas open-source para 
 
 Com essa stack, temos uma solução completa de observabilidade que cobre logs, métricas e traces, com suporte para alta disponibilidade e escalabilidade, todos os dados ficam centralizados no Grafana para facilitar a análise e correlação de eventos, e por utilizar armazenamento em bucket (object storage) como backend, a solução se torna muito mais econômica em comparação com outras que necessitam de bancos de dados dedicados ou discos persistentes.
 
-## Sumário
+## Índice
 
+<details>
 - [Arquitetura](#arquitetura)
   - [Requisitos de Hardware](#requisitos-de-hardware)
 - [Início Rápido](#-início-rápido)
@@ -46,6 +47,7 @@ Com essa stack, temos uma solução completa de observabilidade que cobre logs, 
   - [Configuração Adicional](#configuração-adicional)
     - [Personalização de Labels no Loki](#personalização-de-labels-no-loki)
 - [Desinstalação](#desinstalação)
+</details>
 
 ## Arquitetura
 
