@@ -22,6 +22,8 @@ Com essa stack, temos uma solução completa de observabilidade que cobre logs, 
 ## Índice
 
 <details>
+<summary>Mostrar/Ocultar</summary>
+
 - [Arquitetura](#arquitetura)
   - [Requisitos de Hardware](#requisitos-de-hardware)
 - [Início Rápido](#-início-rápido)

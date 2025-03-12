@@ -21,7 +21,7 @@ With this stack, we have a complete observability solution that covers logs, met
 
 ## Table of Contents
 <details>
-<summary>Expanda para ver o conteúdo</summary>
+<summary>Click to expand</summary>
 
 - [Architecture](#architecture)
   - [Hardware Requirements](#hardware-requirements)
