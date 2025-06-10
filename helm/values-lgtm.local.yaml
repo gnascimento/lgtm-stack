@@ -1,6 +1,5 @@
 ---
 grafana:
-  # -- Deploy Grafana if enabled. See [upstream readme](https://github.com/grafana/helm-charts/tree/main/charts/grafana#configuration) for full values reference.
   enabled: true
   sidecar:
     dashboards:
@@ -14,6 +13,16 @@ grafana:
           type: loki
           url: http://{{ .Release.Name }}-loki-gateway
           isDefault: false
+          jsonData:
+            derivedFields:
+              - name: traceId
+                matcherRegex: 'trace_id=([a-f0-9]+)'
+                url: '$${__value.raw}'
+                datasourceUid: tempo
+              - name: spanId
+                matcherRegex: 'span_id=([a-f0-9]+)'
+                url: '$${__value.raw}'
+                datasourceUid: tempo
         - name: Mimir
           uid: prom
           type: prometheus
@@ -25,33 +34,40 @@ grafana:
           url: http://{{ .Release.Name }}-tempo-query-frontend:3100
           isDefault: false
           jsonData:
-            tracesToLogsV2:
-              datasourceUid: loki
-            lokiSearch:
-              datasourceUid: loki
+            tracesToLogs:
+              datasourceUid: loki # Data source alvo (Loki)
+              tags: [ 'cluster', 'hostname', 'namespace', 'pod', 'service.name', 'service.namespace', 'container', 'job' ] # Tags para filtrar logs
+              spanStartTimeShift: '-2m'  # Exemplo: buscar logs 0 minutos antes do início do span
+              spanEndTimeShift: '2m'    # Exemplo: buscar logs até 2 minutos após o fim do span
+              filterByTraceID: true     # Filtrar por trace ID
+              filterBySpanID: true     # Filtrar por span ID (adicione se quiser)
+              useCustomQuery: false     # Use consulta customizada se necessário
+              query: ""                 # Consulta customizada (preencha se useCustomQuery: true)
             tracesToMetrics:
               datasourceUid: prom
             serviceMap:
               datasourceUid: prom
 
 loki:
-  # -- Deploy Loki if enabled. See [upstream readme](https://github.com/grafana/helm-charts/tree/main/charts/loki-distributed#values) for full values reference.
   enabled: true
+  image:
+    tag: "2.9.8"
   commonConfig:
     replication_factor: 1
   loki:
     server:
       grpc_server_max_recv_msg_size: 104857600
       grpc_server_max_send_msg_size: 104857600
+    retention_period: 96h # 4 dias (pode ser 24h, 168h, 30d, etc)
     schemaConfig:
       configs:
-      - from: "2020-09-07"
-        store: tsdb
-        object_store: aws
-        schema: v13
-        index:
-          prefix: loki_index_
-          period: 24h
+        - from: "2020-09-07"
+          store: tsdb
+          object_store: aws
+          schema: v13
+          index:
+            prefix: loki_index_
+            period: 24h
     storageConfig:
       tsdb_shipper:
         shared_store: s3
@@ -63,22 +79,19 @@ loki:
         s3forcepathstyle: true
         endpoint: lgtm-minio:9000
         insecure: true
-    
-   
 
-# -- Mimir chart values. Resources are set to a minimum by default.
 mimir:
-  # -- Deploy Mimir if enabled. See [upstream values.yaml](https://github.com/grafana/mimir/blob/main/operations/helm/charts/mimir-distributed/values.yaml) for full values reference.
   enabled: true
   server:
-      grpc_server_max_concurrent_streams: 1000
-      grpc_server_max_recv_msg_size: 104857600
-      grpc_server_max_send_msg_size: 104857600
+    grpc_server_max_concurrent_streams: 1000
+    grpc_server_max_recv_msg_size: 104857600
+    grpc_server_max_send_msg_size: 104857600
   structuredConfig:
-      limits:
-        max_global_series_per_user: 10000000
-        ingestion_rate: 150000
-        ingestion_burst_size: 300000
+    limits:
+      max_global_series_per_user: 10000000
+      ingestion_rate: 150000
+      ingestion_burst_size: 300000
+      retention_period: 4d
   metaMonitoring:
     dashboards:
       enabled: true
@@ -125,7 +138,6 @@ mimir:
     resources:
       requests:
         cpu: 20m
-  
   store_gateway:
     zoneAwareReplication:
       enabled: false
@@ -137,31 +149,28 @@ mimir:
     rootPassword: supersecret
     rootUser: lgtm
     buckets:
-    - name: mimir-tsdb
-      policy: none
-      purge: false
-    - name: mimir-ruler
-      policy: none
-      purge: false
-    - name: loki
-      policy: none
-      purge: false
-    - name: tempo
-      policy: none
-      purge: false
+      - name: mimir-tsdb
+        policy: none
+        purge: false
+      - name: mimir-ruler
+        policy: none
+        purge: false
+      - name: loki
+        policy: none
+        purge: false
+      - name: tempo
+        policy: none
+        purge: false
   rollout_operator:
     resources:
       requests:
         cpu: 20m
-        
-  # optional
   ruler:
     enabled: true
   alertmanager:
     enabled: false
 
 tempo:
-  # -- Deploy Tempo if enabled.  See [upstream readme](https://github.com/grafana/helm-charts/blob/main/charts/tempo-distributed/README.md#values) for full values reference.
   enabled: true
   metaMonitoring:
     serviceMonitor:
@@ -173,9 +182,10 @@ tempo:
       labels:
         release: prometheus-operator
   storage:
-    trace: 
+    trace:
+      retention: 96h
       backend: s3
-      s3: 
+      s3:
         access_key: lgtm
         bucket: tempo
         prefix: traces
@@ -184,7 +194,7 @@ tempo:
         secret_key: supersecret
   ingester:
     replicas: 1
-    config: 
+    config:
       replication_factor: 1
   traces:
     otlp:
@@ -197,8 +207,8 @@ tempo:
     config:
       storage:
         remote_write:
-        - url: http://lgtm-mimir-nginx/api/v1/push
-          send_exemplars: true
+          - url: http://lgtm-mimir-nginx/api/v1/push
+            send_exemplars: true
   global_overrides:
     defaults:
       metrics_generator:
